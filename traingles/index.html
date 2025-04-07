@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .triangle-background {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(45deg, #1a1a1a, #000000);
+        }
+
+        .triangle-grid {
+            width: 100%;
+            height: 100%;
+        }
+
+        .triangle {
+            fill: none;
+            stroke: #4a4a4a; /* Dark gray base */
+            stroke-width: 2;
+            stroke-dasharray: 5; /* Dotted lines */
+            transition: opacity 0.5s ease-out;
+            vector-effect: non-scaling-stroke;
+        }
+
+        .hover-circle {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: all 0.1s ease;
+        }
+
+        @keyframes pulse {
+            0% { stroke-opacity: 0.7; }
+            50% { stroke-opacity: 1; }
+            100% { stroke-opacity: 0.7; }
+        }
+
+        .triangle.pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="triangle-background" id="background">
+        <svg class="triangle-grid" id="triangleGrid"></svg>
+        <div class="hover-circle" id="hoverCircle"></div>
+    </div>
+
+    <script>
+        // Function to generate vibrant, cool colors
+        function getCoolColor() {
+            const hue = Math.random() * 360; // Full hue range
+            const saturation = 70 + Math.random() * 30; // 70-100% for vibrancy
+            const lightness = 50 + Math.random() * 30; // 50-80% for brightness
+            return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+        }
+
+        // Function to get a related shade of a base color
+        function getRelatedShade(baseColor) {
+            const hsl = baseColor.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+            if (!hsl) return baseColor;
+            const [_, hue, sat, light] = hsl.map(Number);
+            const newLight = Math.min(90, Math.max(30, light + (Math.random() * 40 - 20))); // Vary lightness ±20
+            return `hsl(${hue}, ${sat}%, ${newLight}%)`;
+        }
+
+        function createTrianglePattern() {
+            const svg = document.getElementById('triangleGrid');
+            const width = svg.parentElement.clientWidth;
+            const height = svg.parentElement.clientHeight;
+            
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+
+            const triWidth = 60;
+            const triHeight = 52;
+            const spacing = 8;
+            
+            const cols = Math.ceil(width / (triWidth + spacing)) + 1;
+            const rows = Math.ceil(height / (triHeight + spacing)) + 1;
+
+            svg.innerHTML = ''; // Clear defs since we’re not using gradient
+
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const x = col * (triWidth + spacing) + (row % 2 * (triWidth/2));
+                    const y = row * (triHeight + spacing);
+
+                    const upTri = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    upTri.setAttribute('points', `${x},${y} ${x + triWidth/2},${y + triHeight} ${x + triWidth},${y}`);
+                    upTri.setAttribute('class', 'triangle pulse');
+                    upTri.style.animationDelay = `${Math.random() * 2}s`;
+
+                    const downTri = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    downTri.setAttribute('points', `${x},${y + triHeight} ${x + triWidth/2},${y} ${x + triWidth},${y + triHeight}`);
+                    downTri.setAttribute('class', 'triangle pulse');
+                    downTri.style.animationDelay = `${Math.random() * 2}s`;
+
+                    // Assign unique base color to each triangle
+                    const baseColor = getCoolColor();
+                    upTri.dataset.baseColor = baseColor;
+                    downTri.dataset.baseColor = baseColor;
+
+                    svg.appendChild(upTri);
+                    svg.appendChild(downTri);
+                }
+            }
+
+            // Add color pulsing
+            const triangles = document.getElementsByClassName('triangle');
+            Array.from(triangles).forEach(triangle => {
+                setInterval(() => {
+                    const baseColor = triangle.dataset.baseColor;
+                    const newColor = Math.random() < 0.7 ? getRelatedShade(baseColor) : '#4a4a4a'; // 70% chance of color, 30% gray
+                    triangle.style.stroke = newColor;
+                }, 2000); // Sync with pulse
+            });
+        }
+
+        const background = document.getElementById('background');
+        const hoverCircle = document.getElementById('hoverCircle');
+        const triangles = document.getElementsByClassName('triangle');
+
+        background.addEventListener('mousemove', (e) => {
+            hoverCircle.style.left = `${e.clientX}px`;
+            hoverCircle.style.top = `${e.clientY}px`;
+
+            const circleRect = hoverCircle.getBoundingClientRect();
+            const radius = circleRect.width / 2;
+
+            Array.from(triangles).forEach(triangle => {
+                const triRect = triangle.getBoundingClientRect();
+                const triCenterX = triRect.left + triRect.width/2;
+                const triCenterY = triRect.top + triRect.height/2;
+
+                const distance = Math.sqrt(
+                    Math.pow(triCenterX - (circleRect.left + radius), 2) +
+                    Math.pow(triCenterY - (circleRect.top + radius), 2)
+                );
+
+                if (distance < radius) {
+                    const opacity = 1 - (distance / radius);
+                    triangle.style.opacity = Math.max(0, opacity - 0.5);
+                } else {
+                    triangle.style.opacity = 1;
+                }
+            });
+        });
+
+        background.addEventListener('mouseleave', () => {
+            Array.from(triangles).forEach(triangle => {
+                triangle.style.opacity = 1;
+            });
+        });
+
+        window.addEventListener('load', createTrianglePattern);
+        window.addEventListener('resize', createTrianglePattern);
+    </script>
+</body>
+</html>
