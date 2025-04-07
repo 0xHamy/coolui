@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .triangle-background {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(45deg, #1a1a1a, #000000); /* Dark gradient background */
+        }
+
+        .triangle-grid {
+            width: 100%;
+            height: 100%;
+        }
+
+        .triangle {
+            fill: none;
+            stroke: url(#grad1); /* Gradient stroke */
+            stroke-width: 2;
+            transition: opacity 0.5s ease-out;
+            vector-effect: non-scaling-stroke;
+        }
+
+        /* Hover effect container */
+        .hover-circle {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: all 0.1s ease;
+        }
+
+        /* Animation for triangles */
+        @keyframes pulse {
+            0% { stroke-opacity: 0.7; }
+            50% { stroke-opacity: 1; }
+            100% { stroke-opacity: 0.7; }
+        }
+
+        .triangle.pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="triangle-background" id="background">
+        <svg class="triangle-grid" id="triangleGrid">
+            <defs>
+                <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#2ecc71;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#27ae60;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+        </svg>
+        <div class="hover-circle" id="hoverCircle"></div>
+    </div>
+
+    <script>
+        function createTrianglePattern() {
+            const svg = document.getElementById('triangleGrid');
+            const width = svg.parentElement.clientWidth;
+            const height = svg.parentElement.clientHeight;
+            
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+
+            const triWidth = 60;
+            const triHeight = 52; // Slightly larger triangles
+            const spacing = 8;
+            
+            const cols = Math.ceil(width / (triWidth + spacing)) + 1;
+            const rows = Math.ceil(height / (triHeight + spacing)) + 1;
+
+            svg.innerHTML = '<defs><linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#2ecc71;stop-opacity:1" /><stop offset="100%" style="stop-color:#27ae60;stop-opacity:1" /></linearGradient></defs>';
+
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const x = col * (triWidth + spacing) + (row % 2 * (triWidth/2)); // Offset every other row
+                    const y = row * (triHeight + spacing);
+
+                    // Up triangle with slight variation
+                    const upTri = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    upTri.setAttribute('points', `
+                        ${x},${y}
+                        ${x + triWidth/2},${y + triHeight}
+                        ${x + triWidth},${y}
+                    `);
+                    upTri.setAttribute('class', 'triangle pulse');
+                    upTri.style.animationDelay = `${Math.random() * 2}s`;
+
+                    // Down triangle with slight variation
+                    const downTri = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    downTri.setAttribute('points', `
+                        ${x},${y + triHeight}
+                        ${x + triWidth/2},${y}
+                        ${x + triWidth},${y + triHeight}
+                    `);
+                    downTri.setAttribute('class', 'triangle pulse');
+                    downTri.style.animationDelay = `${Math.random() * 2}s`;
+
+                    svg.appendChild(upTri);
+                    svg.appendChild(downTri);
+                }
+            }
+        }
+
+        // Hover effect
+        const background = document.getElementById('background');
+        const hoverCircle = document.getElementById('hoverCircle');
+        const triangles = document.getElementsByClassName('triangle');
+
+        background.addEventListener('mousemove', (e) => {
+            hoverCircle.style.left = `${e.clientX}px`;
+            hoverCircle.style.top = `${e.clientY}px`;
+
+            const circleRect = hoverCircle.getBoundingClientRect();
+            const radius = circleRect.width / 2;
+
+            Array.from(triangles).forEach(triangle => {
+                const triRect = triangle.getBoundingClientRect();
+                const triCenterX = triRect.left + triRect.width/2;
+                const triCenterY = triRect.top + triRect.height/2;
+
+                const distance = Math.sqrt(
+                    Math.pow(triCenterX - (circleRect.left + radius), 2) +
+                    Math.pow(triCenterY - (circleRect.top + radius), 2)
+                );
+
+                if (distance < radius) {
+                    const opacity = 1 - (distance / radius);
+                    triangle.style.opacity = Math.max(0, opacity - 0.5);
+                } else {
+                    triangle.style.opacity = 1;
+                }
+            });
+        });
+
+        background.addEventListener('mouseleave', () => {
+            Array.from(triangles).forEach(triangle => {
+                triangle.style.opacity = 1;
+            });
+        });
+
+        window.addEventListener('load', createTrianglePattern);
+        window.addEventListener('resize', createTrianglePattern);
+    </script>
+</body>
+</html>
