@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <style>
         #my-background {
             width: 100%;
-            height: 100vh; /* or any size you want */
+            height: 100vh;
+            /* or any size you want */
         }
     </style>
 </head>
+
 <body>
     <div id="my-background"></div>
 
@@ -16,7 +19,9 @@
         createTriangleAnimation({
             containerId: 'my-background',
             colors: ['#26a0a5', '#32c5ca', '#40d8d0', '#4eebd6', '#5cfedc',
-                    '#6af6b8', '#78e9a1', '#86dc8b', '#94cf74', '#8ee2aa'],
+                '#6af6b8', '#78e9a1', '#86dc8b', '#94cf74', '#8ee2aa',
+                '#b0f7f5', '#e0fbfc', '#f0ffff', '#d4f4f6', '#aqua'
+            ],
             spacing: 8,
             triangleWidth: 60,
             triangleHeight: 52,
@@ -28,7 +33,7 @@
             },
             stroke: {
                 width: 2,
-                style: 'dashed' // solid or 'dashed' or 'dotted'
+                style: 'solid' // solid or 'dashed' or 'dotted'
             },
             hoverEffect: {
                 enabled: true,
@@ -37,4 +42,5 @@
         });
     </script>
 </body>
+
 </html>
