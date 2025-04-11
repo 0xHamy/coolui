@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Honeycomb Sleek Background</title>
+  <style>
+    /* Customizable variables */
+    :root {
+      --bg-color: #1e1e2e; /* Base background color */
+      --honeycomb-color: #3b82f6; /* Honeycomb fill color */
+      --honeycomb-accent: #10b981; /* Accent for animation */
+      --honeycomb-size: 60px; /* Size of each hexagon */
+      --animation-speed: 4s; /* Animation duration */
+      --noise-opacity: 0.06; /* Noise texture subtlety */
+    }
+
+    /* Base background styles */
+    .sleek-background {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 100vh;
+      background: var(--bg-color);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Honeycomb pattern using pseudo-elements and transforms */
+    .sleek-background::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(
+          circle at center,
+          transparent 0%,
+          rgba(0, 0, 0, 0.5) 100%
+        ),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 150 130' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='honeycomb' x='0' y='0' width='150' height='130' patternUnits='userSpaceOnUse'%3E%3Cpath d='M75 0 L112.5 21.65 L112.5 64.95 L75 86.6 L37.5 64.95 L37.5 21.65 Z' fill='none' stroke='%233b82f6' stroke-width='2'/%3E%3Cpath d='M0 43.3 L37.5 64.95 L37.5 108.25 L0 129.9 L-37.5 108.25 L-37.5 64.95 Z' fill='none' stroke='%233b82f6' stroke-width='2'/%3E%3Cpath d='M150 43.3 L112.5 64.95 L112.5 108.25 L150 129.9 L187.5 108.25 L187.5 64.95 Z' fill='none' stroke='%233b82f6' stroke-width='2'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23honeycomb)'/%3E%3C/svg%3E");
+      background-size: var(--honeycomb-size) calc(var(--honeycomb-size) * 0.866); /* Hexagon aspect ratio */
+      animation: honeycombPulse var(--animation-speed) ease-in-out infinite;
+      opacity: 0.4; /* Subtle visibility */
+      pointer-events: none;
+    }
+
+    /* Honeycomb animation */
+    @keyframes honeycombPulse {
+      0%, 100% {
+        transform: scale(1);
+        filter: hue-rotate(0deg);
+      }
+      50% {
+        transform: scale(1.05);
+        filter: hue-rotate(30deg); /* Subtle color shift for accent */
+      }
+    }
+
+    /* Noise overlay */
+    .sleek-background::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.3"/></svg>');
+      opacity: var(--noise-opacity);
+      pointer-events: none;
+    }
+
+    /* Content styling */
+    .sleek-background h1 {
+      font-size: 3rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      z-index: 1;
+    }
+
+    .sleek-background p {
+      font-size: 1.2rem;
+      max-width: 600px;
+      opacity: 0.9;
+      z-index: 1;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .sleek-background::after {
+        background-size: calc(var(--honeycomb-size) * 0.8) calc(var(--honeycomb-size) * 0.8 * 0.866);
+      }
+      .sleek-background h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sleek-background">
+    <h1>Honeycomb Horizon</h1>
+    <p>A modern background with an animated honeycomb pattern, sleek and modular for any UI.</p>
+  </div>
+</body>
+</html>
