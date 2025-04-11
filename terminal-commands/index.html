@@ -9,22 +9,22 @@
     <div id="terminal-container"></div>
     <script src="script.js"></script>
     <script>
-        // Initialize terminal with custom options
         new CyberTerminal({
             containerId: 'terminal-container',
-            pageBackground: '#111', // Dark gray page
-            containerBackground: 'transparent', // Transparent container
-            terminalBackground: '#232525', // Black terminal
-            promptColor: '#93e9be', // Pistachio-green
-            textColor: '#ccc', // Light gray
-            cursorColor: '#93e9be', // Pistachio-green
-            borderColor: '#800080', // Purple
-            glowColor: '#80008050', // Purple with transparency
+            pageBackground: '#111',
+            containerBackground: 'transparent',
+            terminalBackground: '#232525',
+            promptColor: '#93e9be',
+            textColor: '#ccc',
+            cursorColor: '#93e9be',
+            borderColor: '#800080',
+            glowColor: '#80008050',
             terminalWidth: '800px',
             terminalHeight: '400px',
-            typingSpeed: 100, // ms per character
-            outputDelay: 500, // ms after typing
-            resetDelay: 1000 // ms before reset
+            typingSpeed: 100,
+            outputDelay: 500,
+            resetDelay: 1000,
+            useReset: true // Enable reset mode
         });
     </script>
 </body>

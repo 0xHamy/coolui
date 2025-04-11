@@ -16,7 +16,8 @@
             terminalHeight: '400px',
             typingSpeed: 100,
             outputDelay: 500,
-            resetDelay: 1000
+            resetDelay: 1000,
+            useReset: false // New option: false for fade mode, true for reset mode
         };
 
         // Merge user options with defaults
@@ -33,6 +34,14 @@
                 output: 'uid=0(root) gid=0(root) groups=0(root)'
             }
         ];
+
+        // Add reset command only if useReset is true
+        if (this.options.useReset) {
+            this.commands.push({
+                input: 'reset',
+                output: ''
+            });
+        }
 
         this.commandIndex = 0;
         this.state = 'typing';
@@ -53,7 +62,7 @@
         // Create terminal
         this.terminal = document.createElement('div');
         this.terminal.id = 'terminal';
-        this.container.appendChild(this.terminal); // Fixed: Removed invalid 'podat' call
+        this.container.appendChild(this.terminal);
 
         // Apply styles
         this.applyStyles();
@@ -184,15 +193,17 @@
     };
 
     CyberTerminal.prototype.showOutput = function (text, callback) {
-        const output = document.createElement('div');
-        output.textContent = text;
-        Object.assign(output.style, {
-            color: this.options.textColor,
-            marginTop: '8px',
-            opacity: 0,
-            animation: 'fadeIn 0.5s forwards'
-        });
-        this.terminal.appendChild(output);
+        if (text) { // Only create output div if there's text
+            const output = document.createElement('div');
+            output.textContent = text;
+            Object.assign(output.style, {
+                color: this.options.textColor,
+                marginTop: '8px',
+                opacity: 0,
+                animation: 'fadeIn 0.5s forwards'
+            });
+            this.terminal.appendChild(output);
+        }
         setTimeout(callback, this.options.outputDelay);
     };
 
@@ -208,11 +219,19 @@
     CyberTerminal.prototype.runTerminal = function () {
         const loop = () => {
             if (this.commandIndex >= this.commands.length) {
-                this.fadeOut(() => {
+                if (this.options.useReset) {
+                    // Reset mode: clear terminal without fading
                     this.terminal.innerHTML = '';
                     this.commandIndex = 0;
                     setTimeout(loop, this.options.resetDelay);
-                });
+                } else {
+                    // Fade mode: fade out, clear, fade in
+                    this.fadeOut(() => {
+                        this.terminal.innerHTML = '';
+                        this.commandIndex = 0;
+                        setTimeout(loop, this.options.resetDelay);
+                    });
+                }
                 return;
             }
 
