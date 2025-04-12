@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wave Graph Animation</title>
+</head>
+<body>
+    <div id="backgroundContainer" style="width: 100vw; height: 100vh;">
+        <h1 style="color: #000; text-align: center; padding-top: 20px;">Wave Background</h1>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        // Custom initialization with different values and a list of colors
+        const wave = new WaveGraph('backgroundContainer', {
+            gridSize: 15, // Smaller grid
+            waveSpeed: 0.03, // Slightly faster
+            waveHeight: 20, // More laid back
+            dotSize: 3, // Larger dots
+            colors: ['#393a3b', '#000', '#72d1b9', '#53e176'] // Red, Green, Blue, Yellow
+        });
+        wave.init();
+    </script>
+</body>
+</html>
