@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Random Red Glitch Lines in Three.js</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #ccc; /* Light gray background */
+        }
+        #container {
+            width: 300px;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <!-- Three.js CDN (r134) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script>
+        // Glitch effect class
+        class GlitchEffect {
+            constructor(containerId, options = {}) {
+                this.container = document.getElementById(containerId);
+                this.options = {
+                    speed: options.speed || 0.5, // Glitches per second
+                    lineSize: options.lineSize || 0.01, // Line thickness
+                    orientation: options.orientation || 'horizontal', // 'horizontal' or 'vertical'
+                    lineCount: options.lineCount || 3, // Max lines
+                    lineColor: options.lineColor || { r: 1.0, g: 0.0, b: 0.0, a: 0.4 } // Transparent red
+                };
+                this.init();
+            }
+
+            init() {
+                // Scene setup
+                this.scene = new THREE.Scene();
+                this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+                this.camera.position.z = 1;
+                this.renderer = new THREE.WebGLRenderer({ alpha: true });
+                this.renderer.setSize(300, 300);
+                this.container.appendChild(this.renderer.domElement);
+
+                // Background (black square with text)
+                const textCanvas = document.createElement('canvas');
+                textCanvas.width = 300;
+                textCanvas.height = 300;
+                const ctx = textCanvas.getContext('2d');
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, 300, 300);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '24px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('Glitch Me', 150, 150);
+                const textTexture = new THREE.CanvasTexture(textCanvas);
+
+                const bgGeometry = new THREE.PlaneGeometry(2, 2);
+                const bgMaterial = new THREE.MeshBasicMaterial({ map: textTexture });
+                const bgPlane = new THREE.Mesh(bgGeometry, bgMaterial);
+                this.scene.add(bgPlane);
+
+                // Glitch plane
+                const glitchGeometry = new THREE.PlaneGeometry(2, 2);
+                this.glitchMaterial = new THREE.ShaderMaterial({
+                    uniforms: {
+                        uTime: { value: 0.0 },
+                        uSpeed: { value: this.options.speed },
+                        uLineSize: { value: this.options.lineSize },
+                        uOrientation: { value: this.options.orientation === 'horizontal' ? 0 : 1 },
+                        uLineCount: { value: this.options.lineCount },
+                        uLineColor: { value: new THREE.Vector4(
+                            this.options.lineColor.r,
+                            this.options.lineColor.g,
+                            this.options.lineColor.b,
+                            this.options.lineColor.a
+                        ) }
+                    },
+                    vertexShader: `
+                        varying vec2 vUv;
+                        void main() {
+                            vUv = uv;
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform float uTime;
+                        uniform float uSpeed;
+                        uniform float uLineSize;
+                        uniform int uOrientation;
+                        uniform float uLineCount;
+                        uniform vec4 uLineColor;
+                        varying vec2 vUv;
+
+                        float random(float seed) {
+                            return fract(sin(seed * 78.233) * 43758.5453);
+                        }
+
+                        void main() {
+                            vec2 uv = vUv;
+                            vec4 color = vec4(0.0); // Transparent base
+
+                            float time = uTime * uSpeed;
+                            float coord = uOrientation == 0 ? uv.y : uv.x;
+
+                            // Draw random lines
+                            for (int i = 0; i < 10; i++) {
+                                if (float(i) >= uLineCount) break;
+                                float seed = float(i) + floor(time * 1000.0);
+                                float pos = random(seed); // Random position
+                                float isVisible = random(seed + 0.1); // Renamed from 'active'
+                                if (isVisible < 0.1 / uSpeed && abs(coord - pos) < uLineSize) {
+                                    color = uLineColor;
+                                }
+                            }
+
+                            gl_FragColor = color;
+                        }
+                    `,
+                    transparent: true
+                });
+
+                const glitchPlane = new THREE.Mesh(glitchGeometry, this.glitchMaterial);
+                this.scene.add(glitchPlane);
+
+                // Start animation
+                this.animate();
+            }
+
+            animate() {
+                const animateFrame = () => {
+                    this.glitchMaterial.uniforms.uTime.value += 0.016; // ~60 FPS
+                    this.renderer.render(this.scene, this.camera);
+                    requestAnimationFrame(animateFrame);
+                };
+                animateFrame();
+            }
+        }
+
+        // Initialize glitch effect
+        const glitch = new GlitchEffect('container', {
+            speed: 0.5, // 0.5 glitches/second
+            lineSize: 0.01, // ~3px thick
+            orientation: 'horizontal', // Horizontal lines
+            lineCount: 3, // Up to 3 lines
+            lineColor: { r: 1.0, g: 0.0, b: 0.0, a: 0.4 } // Transparent red
+        });
+    </script>
+</body>
+</html>
