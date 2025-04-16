@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js Hexagonal Network with Glowing Borders</title>
+    <title>Three.js Hexagonal Network with Glowing Borders and Overlay</title>
     <style>
         body { margin: 0; overflow: hidden; background: #000000; }
         canvas { display: block; }
@@ -47,7 +47,7 @@
 
         // Store hexagons and their properties
         const hexagons = [];
-        const numHexagons = 30; // Increased from 15 to 30
+        const numHexagons = 30;
 
         // Function to check for collisions
         function isPositionValid(pos, radius, existingHexagons) {
@@ -56,7 +56,7 @@
                     Math.pow(pos.x - hex.position.x, 2) +
                     Math.pow(pos.y - hex.position.y, 2)
                 );
-                if (dist < (radius + hex.radius + 0.8)) { // Slightly reduced distance for more hexagons
+                if (dist < (radius + hex.radius + 0.8)) {
                     return false;
                 }
             }
@@ -130,11 +130,10 @@
             scene.add(hexagonGroup);
         }
 
-        // Create more complex lines between hexagons
+        // Create complex lines between hexagons
         for (let i = 0; i < hexagons.length; i++) {
             const hex1 = hexagons[i];
-            // Connect to 4-6 neighbors with some randomness
-            const numConnections = Math.floor(Math.random() * 3) + 4; // Randomly between 4 and 6
+            const numConnections = Math.floor(Math.random() * 3) + 4;
             const distances = hexagons.map((hex2, idx) => ({
                 idx: idx,
                 dist: hex1.position.distanceTo(hex2.position)
@@ -142,21 +141,19 @@
 
             distances.forEach(({ idx }) => {
                 const hex2 = hexagons[idx];
-                // Randomize line properties for complexity
-                const lineOpacity = Math.random() * 0.3 + 0.1; // Between 0.1 and 0.4
+                const lineOpacity = Math.random() * 0.3 + 0.1;
                 const lineMaterial = new THREE.LineBasicMaterial({ 
                     color: 0x00FFFF, 
                     transparent: true, 
                     opacity: lineOpacity,
-                    linewidth: Math.random() * 2 + 1 // Random thickness between 1 and 3
+                    linewidth: Math.random() * 2 + 1
                 });
                 const points = [hex1.position, hex2.position];
                 const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
                 const line = new THREE.Line(lineGeometry, lineMaterial);
                 scene.add(line);
 
-                // Add a secondary faint line with a slight offset for more complexity
-                if (Math.random() > 0.5) { // 50% chance of adding a secondary line
+                if (Math.random() > 0.5) {
                     const offset = 0.1;
                     const offsetPoints = [
                         new THREE.Vector3(
@@ -194,6 +191,37 @@
         const dots = new THREE.Points(dotGeometry, dotMaterial);
         scene.add(dots);
 
+        // Create transparent black overlay
+        const overlayGeometry = new THREE.PlaneGeometry(frustumWidth, frustumHeight);
+        const overlayMaterial = new THREE.MeshBasicMaterial({
+            color: 0x000000,
+            transparent: true,
+            opacity: 0.7 // Initial opacity (adjustable)
+        });
+        const overlay = new THREE.Mesh(overlayGeometry, overlayMaterial);
+        overlay.position.z = 5; // Place in front of hexagons but behind camera
+        scene.add(overlay);
+
+        // Functions to adjust overlay opacity
+        function increaseOpacity() {
+            overlayMaterial.opacity = Math.min(overlayMaterial.opacity + 0.1, 1);
+            console.log('Overlay opacity:', overlayMaterial.opacity);
+        }
+
+        function decreaseOpacity() {
+            overlayMaterial.opacity = Math.max(overlayMaterial.opacity - 0.1, 0);
+            console.log('Overlay opacity:', overlayMaterial.opacity);
+        }
+
+        // Add keyboard controls to adjust opacity
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowUp') {
+                increaseOpacity();
+            } else if (event.key === 'ArrowDown') {
+                decreaseOpacity();
+            }
+        });
+
         // Animation
         function animate() {
             requestAnimationFrame(animate);
@@ -228,7 +256,14 @@
             camera.bottom = -frustumHeight / 2;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // Update overlay size on resize
+            overlay.geometry.dispose();
+            overlay.geometry = new THREE.PlaneGeometry(frustumWidth, frustumHeight);
         });
+
+        // Log instructions for user
+        console.log('Use Arrow Up to increase overlay opacity (less visible), Arrow Down to decrease (more visible)');
     </script>
 </body>
 </html>
