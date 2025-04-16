@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sidebar with DaisyUI and Alpine.js</title>
-    <!-- DaisyUI CDN -->
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
-    <!-- Font Awesome for GitHub and other icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <!-- Alpine.js CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
     
     <style>
@@ -18,14 +15,8 @@
         body {
             font-family: 'Martian Mono';
         }
+        /* Minimal custom CSS for scrollbar and logo */
         .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            width: 250px;
-            overflow-y: auto;
-            transition: all 0.3s ease;
             scrollbar-width: thin;
         }
         .sidebar::-webkit-scrollbar {
@@ -33,10 +24,6 @@
         }
         .sidebar::-webkit-scrollbar-thumb {
             border-radius: 3px;
-        }
-        .sidebar-item:hover {
-            transform: translateX(5px);
-            transition: all 0.2s ease;
         }
         .team-logo {
             width: 100px;
@@ -47,71 +34,108 @@
     </style>
 </head>
 <body>
-    <div class="sidebar bg-base-200 shadow-xl" x-data="sidebar()">
-        <div class="p-6 flex flex-col items-center">
-            <!-- Team Logo -->
-            <img src="https://i.ibb.co/h18BLXb0/image-removebg-preview.png" alt="Team Logo" class="team-logo mb-4">
-            <!-- Team Name -->
-            <h2 class="text-xl font-bold text-cyan-500">Team Awesome</h2>
-            <!-- Short Bio -->
-            <p class="text-sm text-center text-base-content/70 mt-2">
-                Innovating cybersecurity through research and open-source solutions.
-            </p>
-        </div>
-        <!-- Line -->
-        <div class="divider my-0"></div>
-        <!-- Navigation -->
-        <ul class="menu p-4">
-            <li>
-                <a href="#home" class="sidebar-item text-base-content hover:text-cyan-300 hover:bg-black-600" @click="scrollToSection('home')">
-                    <i class="fas fa-home mr-2"></i> Home
-                </a>
-            </li>
-            <li>
-                <a href="#articles" class="sidebar-item text-base-content hover:text-cyan-300 hover:bg-black-600" @click="scrollToSection('articles')">
-                    <i class="fas fa-newspaper mr-2"></i> Articles
-                </a>
-            </li>
-            <li>
-                <a href="#missions" class="sidebar-item text-base-content hover:text-cyan-300 hover:bg-black-600" @click="scrollToSection('missions')">
-                    <i class="fas fa-rocket mr-2"></i> Missions
-                </a>
-            </li>
-            <li>
-                <a href="#vulnerability" class="sidebar-item text-base-content hover:text-cyan-300 hover:bg-black-600" @click="scrollToSection('vulnerability')">
-                    <i class="fas fa-shield-alt mr-2"></i> Vulnerability R&D
-                </a>
-            </li>
-            <li>
-                <a href="#opensource" class="sidebar-item text-base-content hover:text-cyan-300 hover:bg-black-600" @click="scrollToSection('opensource')">
-                    <i class="fas fa-code mr-2"></i> Open-source
-                </a>
-            </li>
-            <li>
-                <a href="#whoarewe" class="sidebar-item text-base-content hover:text-cyan-300 hover:bg-black-600" @click="scrollToSection('whoarewe')">
-                    <i class="fas fa-users mr-2"></i> Who Are We
-                </a>
-            </li>
-        </ul>
-        <!-- Line -->
-        <div class="divider my-0"></div>
-        <!-- GitHub Link -->
-        <div class="p-4">
-            <a href="https://github.com" target="_blank" class="btn btn-ghost w-full flex items-center justify-start gap-2 hover:text-red-400 hover:bg-black-600">
-                <i class="fab fa-github text-lg"></i> GitHub
-            </a>
-        </div>
-    </div>
+    <div x-data="sidebar()">
+        <!-- Hamburger Button for Mobile -->
+        <button class="fixed top-4 left-4 z-50 md:hidden btn btn-ghost btn-circle cursor-pointer" 
+                x-show="!isOpen"
+                @click="toggleSidebar()"
+                aria-label="Open menu">
+            <i class="fas fa-bars text-2xl"></i>
+        </button>
 
-    <!-- Main content (for demo purposes) -->
-    <div class="ml-[250px] p-8">
-        <h1 class="text-3xl font-bold">Main Content Area</h1>
-        <p>This is where your page content goes.</p>
+        <!-- Sidebar -->
+        <div class="sidebar fixed top-0 left-0 h-screen w-64 bg-base-200 shadow-xl transition-transform duration-300 ease-in-out z-50"
+             :class="{ 'translate-x-0': isOpen, '-translate-x-full': !isOpen }">
+            <div class="p-6 flex flex-col items-center">
+                <!-- Close Button -->
+                <button class="absolute top-4 right-4 btn btn-ghost btn-circle cursor-pointer" 
+                        @click="toggleSidebar()"
+                        aria-label="Close menu">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+                <!-- Team Logo -->
+                <img src="https://i.ibb.co/h18BLXb0/image-removebg-preview.png" alt="Team Logo" class="team-logo mb-4">
+                <h2 class="text-xl font-bold text-cyan-500">Team Awesome</h2>
+                <p class="text-sm text-center text-base-content/70 mt-2">
+                    Innovating cybersecurity through research and open-source solutions.
+                </p>
+            </div>
+            <div class="divider my-0"></div>
+            <ul class="menu p-4">
+                <li>
+                    <a href="#home" class="text-base-content hover:text-cyan-300 hover:bg-base-300 transition-transform duration-200 hover:translate-x-1" @click="scrollToSection('home'); toggleSidebar()">
+                        <i class="fas fa-home mr-2"></i> Home
+                    </a>
+                </li>
+                <li>
+                    <a href="#articles" class="text-base-content hover:text-cyan-300 hover:bg-base-300 transition-transform duration-200 hover:translate-x-1" @click="scrollToSection('articles'); toggleSidebar()">
+                        <i class="fas fa-newspaper mr-2"></i> Articles
+                    </a>
+                </li>
+                <li>
+                    <a href="#missions" class="text-base-content hover:text-cyan-300 hover:bg-base-300 transition-transform duration-200 hover:translate-x-1" @click="scrollToSection('missions'); toggleSidebar()">
+                        <i class="fas fa-rocket mr-2"></i> Missions
+                    </a>
+                </li>
+                <li>
+                    <a href="#vulnerability" class="text-base-content hover:text-cyan-300 hover:bg-base-300 transition-transform duration-200 hover:translate-x-1" @click="scrollToSection('vulnerability'); toggleSidebar()">
+                        <i class="fas fa-shield-alt mr-2"></i> Vulnerability R&D
+                    </a>
+                </li>
+                <li>
+                    <a href="#opensource" class="text-base-content hover:text-cyan-300 hover:bg-base-300 transition-transform duration-200 hover:translate-x-1" @click="scrollToSection('opensource'); toggleSidebar()">
+                        <i class="fas fa-code mr-2"></i> Open-source
+                    </a>
+                </li>
+                <li>
+                    <a href="#whoarewe" class="text-base-content hover:text-cyan-300 hover:bg-base-300 transition-transform duration-200 hover:translate-x-1" @click="scrollToSection('whoarewe'); toggleSidebar()">
+                        <i class="fas fa-users mr-2"></i> Who Are We
+                    </a>
+                </li>
+            </ul>
+            <div class="divider my-0"></div>
+            <div class="p-4">
+                <a href="https://github.com" target="_blank" class="btn btn-ghost w-full flex items-center justify-start gap-2 hover:text-red-400 hover:bg-base-300">
+                    <i class="fab fa-github text-lg"></i> GitHub
+                </a>
+            </div>
+        </div>
+
+        <!-- Toggle Button for Desktop -->
+        <button class="fixed top-4 left-4 z-40 hidden md:block btn btn-ghost btn-circle cursor-pointer" 
+                @click="toggleSidebar()"
+                aria-label="Toggle sidebar">
+            <i class="fas" :class="isOpen ? 'fa-times' : 'fa-bars'"></i>
+        </button>
+
+        <!-- Main content -->
+        <div class="p-8 flex items-center justify-center min-h-screen transition-all duration-300"
+             :class="{ 'md:ml-64': isOpen, 'ml-0': !isOpen }">
+            <h1 class="bg-gradient-to-r from-cyan-400 from-0% via-blue-500 via-25% via-red-500 via-75% to-pink-500 to-100% inline-block text-transparent bg-clip-text text-9xl font-bold">hello world</h1>
+        </div>
     </div>
 
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('sidebar', () => ({
+                isOpen: false, // Default to closed on all screens
+                init() {
+                    // Open sidebar by default on desktop
+                    if (window.innerWidth > 768) {
+                        this.isOpen = true;
+                    }
+                    // Update state on resize
+                    window.addEventListener('resize', () => {
+                        if (window.innerWidth > 768) {
+                            this.isOpen = true;
+                        } else {
+                            this.isOpen = false;
+                        }
+                    });
+                },
+                toggleSidebar() {
+                    this.isOpen = !this.isOpen;
+                },
                 scrollToSection(sectionId) {
                     const element = document.getElementById(sectionId);
                     if (element) {
