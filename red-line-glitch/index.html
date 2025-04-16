@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Glitch Animation</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: black; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <!-- Include Three.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script>
+        // Initialization Parameters
+        const config = {
+            lineThickness: 20,           // Line thickness in pixels
+            minLines: 20,               // Minimum number of lines at a time
+            maxLines: 30,              // Maximum number of lines at a time
+            minLength: 500,             // Minimum length of lines in pixels
+            maxLength: 800,             // Maximum length of lines in pixels
+            speed: 1,                // Speed of appearance/disappearance (0 to 1, higher is faster)
+            proximity: 0.1             // Proximity factor (0 to 1, 0 = fully dispersed, 1 = tightly clustered)
+        };
+
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.OrthographicCamera(
+            window.innerWidth / -2, 
+            window.innerWidth / 2, 
+            window.innerHeight / 2, 
+            window.innerHeight / -2, 
+            1, 1000
+        );
+        camera.position.z = 5;
+
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Array to store lines
+        const lines = [];
+
+        // Function to create a new line
+        function createLine() {
+            // Random length between minLength and maxLength
+            const length = Math.random() * (config.maxLength - config.minLength) + config.minLength;
+
+            // Create geometry for the line
+            const geometry = new THREE.BufferGeometry();
+            const vertices = new Float32Array([
+                0, 0, 0,  // Start point
+                length, 0, 0   // End point
+            ]);
+            geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+
+            // Create material (red color, with opacity support)
+            const material = new THREE.LineBasicMaterial({
+                color: 0xff0000,
+                linewidth: config.lineThickness,
+                transparent: true,
+                opacity: 0 // Start with 0 opacity for smooth appearance
+            });
+
+            // Create the line
+            const line = new THREE.Line(geometry, material);
+
+            // Position based on proximity
+            let x, y;
+            if (config.proximity === 0) {
+                // Fully dispersed
+                x = Math.random() * window.innerWidth - window.innerWidth / 2;
+                y = Math.random() * window.innerHeight - window.innerHeight / 2;
+            } else {
+                // Cluster around a random point
+                const clusterX = (Math.random() * window.innerWidth - window.innerWidth / 2);
+                const clusterY = (Math.random() * window.innerHeight - window.innerHeight / 2);
+                const offsetX = (Math.random() - 0.5) * window.innerWidth * config.proximity;
+                const offsetY = (Math.random() - 0.5) * window.innerHeight * config.proximity;
+                x = clusterX + offsetX;
+                y = clusterY + offsetY;
+            }
+            line.position.set(x, y, 0);
+
+            // Add to scene and lines array
+            scene.add(line);
+            lines.push({
+                mesh: line,
+                lifetime: Math.random() * 0.5 + 0.2, // Base lifetime between 0.2 to 0.7 seconds
+                opacity: 0,
+                fadingIn: true
+            });
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Ensure minimum number of lines
+            const targetLines = Math.random() * (config.maxLines - config.minLines) + config.minLines;
+            if (lines.length < targetLines && Math.random() < 0.1) { // 10% chance per frame
+                createLine();
+            }
+
+            // Update lines
+            for (let i = lines.length - 1; i >= 0; i--) {
+                const line = lines[i];
+
+                // Handle opacity for smooth appearance/disappearance
+                if (line.fadingIn) {
+                    line.opacity += config.speed * 0.05;
+                    if (line.opacity >= 1) {
+                        line.opacity = 1;
+                        line.fadingIn = false;
+                    }
+                } else {
+                    line.lifetime -= 0.016; // Roughly 60 FPS
+                    if (line.lifetime <= 0) {
+                        line.opacity -= config.speed * 0.05;
+                    }
+                }
+
+                line.mesh.material.opacity = line.opacity;
+
+                // Remove line if fully faded out
+                if (line.opacity <= 0 && !line.fadingIn) {
+                    scene.remove(line.mesh);
+                    line.mesh.geometry.dispose();
+                    line.mesh.material.dispose();
+                    lines.splice(i, 1);
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.left = window.innerWidth / -2;
+            camera.right = window.innerWidth / 2;
+            camera.top = window.innerHeight / 2;
+            camera.bottom = window.innerHeight / -2;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Start the animation
+        animate();
+    </script>
+</body>
+</html>
