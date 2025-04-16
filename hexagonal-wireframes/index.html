@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hexagonal Wireframe Background</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { width: 100vw; height: 100vh; position: fixed; top: 0; left: 0; z-index: -1; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.OrthographicCamera(
+            window.innerWidth / -2, window.innerWidth / 2,
+            window.innerHeight / 2, window.innerHeight / -2,
+            1, 1000
+        );
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Camera position
+        camera.position.z = 10;
+        camera.updateProjectionMatrix();
+
+        // Create geometry for 2D hexagonal pattern
+        const geometry = new THREE.BufferGeometry();
+        const vertices = [];
+        const size = 50; // Large enough to cover the screen
+        const hexSize = 3;
+        const spacing = hexSize * 2.03;
+
+        for (let x = -size; x <= size; x += spacing) {
+            for (let y = -size; y <= size; y += spacing * 0.866) { // 0.866 is approx sin(60°)
+                for (let i = 0; i < 6; i++) {
+                    const angle = (Math.PI / 3) * i;
+                    const vx = x + Math.cos(angle) * hexSize;
+                    const vy = y + Math.sin(angle) * hexSize;
+                    vertices.push(vx, vy, 0); // 2D (z=0)
+                }
+            }
+        }
+
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+
+        // Create indices for lines (connect vertices to form hexagons)
+        const indices = [];
+        for (let i = 0; i < vertices.length / 18; i++) {
+            const start = i * 6;
+            for (let j = 0; j < 6; j++) {
+                indices.push(start + j, start + ((j + 1) % 6));
+            }
+        }
+        geometry.setIndex(indices);
+
+        // Scale geometry to fit the screen
+        geometry.scale(20, 20, 1); // Adjusted scale to fill viewport
+
+        // Simple material with gold color
+        const material = new THREE.LineBasicMaterial({
+            color: 0xcccccc, 
+            transparent: true,
+            opacity: 0.8,
+            linewidth: 1
+        });
+
+        // Create mesh
+        const mesh = new THREE.LineSegments(geometry, material);
+        scene.add(mesh);
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.left = window.innerWidth / -2;
+            camera.right = window.innerWidth / 2;
+            camera.top = window.innerHeight / 2;
+            camera.bottom = window.innerHeight / -2;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Render once
+        function render() {
+            renderer.render(scene, camera);
+        }
+        render();
+    </script>
+</body>
+</html>
