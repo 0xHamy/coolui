@@ -74,11 +74,9 @@
 
                 this.lines = [];
 
-                // Start the animation
                 this.animate = this.animate.bind(this);
                 this.animate();
 
-                // Handle resize
                 this.onResize = this.onResize.bind(this);
                 window.addEventListener('resize', this.onResize);
             }
@@ -265,17 +263,7 @@
             animate() {
                 requestAnimationFrame(this.animate);
 
-                // Ensure at least minLines are on the screen
-                while (this.lines.length < this.config.minLines) {
-                    this.createLine();
-                }
-
-                // Add new lines up to maxLines with a probability
-                const targetLines = Math.random() * (this.config.maxLines - this.config.minLines) + this.config.minLines;
-                if (this.lines.length < targetLines && Math.random() < 0.1) {
-                    this.createLine();
-                }
-
+                // Step 1: Remove expired lines
                 for (let i = this.lines.length - 1; i >= 0; i--) {
                     const line = this.lines[i];
 
@@ -344,7 +332,7 @@
                         }
                     }
 
-                    if (line.opacity <= 0 && !line.fadingIn) {
+                    if (line.opacity <= 0 && !line.fadingIn && this.lines.length > this.config.minLines) {
                         this.scene.remove(line.group);
                         line.segments.forEach(segment => {
                             segment.mesh.geometry.dispose();
@@ -357,6 +345,20 @@
                             });
                         }
                         this.lines.splice(i, 1);
+                    }
+                }
+
+                // Step 2: Add new lines to maintain the range between minLines and maxLines
+                const currentLines = this.lines.length;
+                const targetLines = Math.floor(Math.random() * (this.config.maxLines - this.config.minLines + 1)) + this.config.minLines;
+
+                if (currentLines < this.config.minLines) {
+                    while (this.lines.length < this.config.minLines) {
+                        this.createLine();
+                    }
+                } else if (currentLines < targetLines && currentLines < this.config.maxLines) {
+                    if (Math.random() < 0.3) {
+                        this.createLine();
                     }
                 }
 
@@ -382,10 +384,35 @@
             }
         }
 
-        // Initialize the animation
+        // Initialize the animation with your specified values
         const animation = new GlitchAnimation('animation-container', {
-            minLines: 20,
-            maxLines: 30
+            lineThickness: 5,
+            minLines: 10,
+            maxLines: 16,
+            minLength: 500,
+            maxLength: 800,
+            speed: 1,
+            proximity: 0.1,
+            lineStyle: 'solid',
+            lineColor: 0x35af89,
+            linePattern: {
+                dashSize: 10,
+                gapSize: 5,
+                dotSize: 2
+            },
+            shadow: {
+                enabled: true,
+                color: 0xcccccc,
+                intensity: 0.5,
+                offset: 5,
+                blur: 2
+            },
+            glitch: {
+                segments: 5,
+                flickerSpeed: 20,
+                duration: 0.5,
+                offsetRange: 10
+            }
         });
     </script>
 </body>
