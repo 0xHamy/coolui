@@ -18,8 +18,14 @@
             maxLines: 30,              // Maximum number of lines at a time
             minLength: 500,             // Minimum length of lines in pixels
             maxLength: 800,             // Maximum length of lines in pixels
-            speed: 1,                // Speed of appearance/disappearance (0 to 1, higher is faster)
-            proximity: 0.1             // Proximity factor (0 to 1, 0 = fully dispersed, 1 = tightly clustered)
+            speed: 1,                   // Speed of appearance/disappearance (0 to 1, higher is faster)
+            proximity: 0.1,             // Proximity factor (0 to 1, 0 = fully dispersed, 1 = tightly clustered)
+            glitch: {
+                segments: 5,            // Number of segments to break the line into (higher = more broken)
+                flickerSpeed: 20,       // Speed of flickering (higher = faster flicker)
+                duration: 0.5,          // Duration of the glitch effect in seconds
+                offsetRange: 10         // Max pixel offset for segments (higher = more chaotic displacement)
+            }
         };
 
         // Scene setup
@@ -40,29 +46,44 @@
         // Array to store lines
         const lines = [];
 
-        // Function to create a new line
+        // Function to create a new line with segmented glitch effect
         function createLine() {
             // Random length between minLength and maxLength
             const length = Math.random() * (config.maxLength - config.minLength) + config.minLength;
 
-            // Create geometry for the line
-            const geometry = new THREE.BufferGeometry();
-            const vertices = new Float32Array([
-                0, 0, 0,  // Start point
-                length, 0, 0   // End point
-            ]);
-            geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+            // Create segments for the line
+            const segmentLength = length / config.glitch.segments;
+            const segments = [];
 
-            // Create material (red color, with opacity support)
-            const material = new THREE.LineBasicMaterial({
-                color: 0xff0000,
-                linewidth: config.lineThickness,
-                transparent: true,
-                opacity: 0 // Start with 0 opacity for smooth appearance
-            });
+            for (let i = 0; i < config.glitch.segments; i++) {
+                const geometry = new THREE.BufferGeometry();
+                const start = i * segmentLength;
+                const end = (i + 1) * segmentLength;
+                const vertices = new Float32Array([
+                    start, 0, 0,  // Start point of segment
+                    end, 0, 0     // End point of segment
+                ]);
+                geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
 
-            // Create the line
-            const line = new THREE.Line(geometry, material);
+                // Create material for each segment
+                const material = new THREE.LineBasicMaterial({
+                    color: 0xff0000,
+                    linewidth: config.lineThickness,
+                    transparent: true,
+                    opacity: 0 // Start with 0 opacity
+                });
+
+                const segment = new THREE.Line(geometry, material);
+                segments.push({
+                    mesh: segment,
+                    offset: { x: 0, y: 0 }, // For glitch displacement
+                    flicker: Math.random() // Random flicker phase
+                });
+            }
+
+            // Create a group to hold all segments
+            const lineGroup = new THREE.Group();
+            segments.forEach(segment => lineGroup.add(segment.mesh));
 
             // Position based on proximity
             let x, y;
@@ -79,15 +100,18 @@
                 x = clusterX + offsetX;
                 y = clusterY + offsetY;
             }
-            line.position.set(x, y, 0);
+            lineGroup.position.set(x, y, 0);
 
             // Add to scene and lines array
-            scene.add(line);
+            scene.add(lineGroup);
             lines.push({
-                mesh: line,
+                group: lineGroup,
+                segments: segments,
                 lifetime: Math.random() * 0.5 + 0.2, // Base lifetime between 0.2 to 0.7 seconds
                 opacity: 0,
-                fadingIn: true
+                fadingIn: true,
+                glitchTimer: 0,
+                isGlitching: true
             });
         }
 
@@ -111,6 +135,7 @@
                     if (line.opacity >= 1) {
                         line.opacity = 1;
                         line.fadingIn = false;
+                        line.isGlitching = false; // Stop glitching once fully faded in
                     }
                 } else {
                     line.lifetime -= 0.016; // Roughly 60 FPS
@@ -119,13 +144,45 @@
                     }
                 }
 
-                line.mesh.material.opacity = line.opacity;
+                // Glitch effect during fade-in
+                if (line.isGlitching) {
+                    line.glitchTimer += 0.016; // Increment timer
+                    if (line.glitchTimer >= config.glitch.duration) {
+                        line.isGlitching = false; // Stop glitching after duration
+                    }
+
+                    // Update each segment
+                    line.segments.forEach(segment => {
+                        // Flicker effect
+                        segment.flicker += 0.016 * config.glitch.flickerSpeed;
+                        const flicker = Math.sin(segment.flicker) > 0 ? line.opacity : 0;
+                        segment.mesh.material.opacity = flicker;
+
+                        // Random displacement for glitch effect
+                        if (line.isGlitching) {
+                            segment.offset.x = (Math.random() - 0.5) * config.glitch.offsetRange;
+                            segment.offset.y = (Math.random() - 0.5) * config.glitch.offsetRange;
+                        } else {
+                            segment.offset.x = 0;
+                            segment.offset.y = 0;
+                        }
+                        segment.mesh.position.set(segment.offset.x, segment.offset.y, 0);
+                    });
+                } else {
+                    // Apply opacity to all segments when not glitching
+                    line.segments.forEach(segment => {
+                        segment.mesh.material.opacity = line.opacity;
+                        segment.mesh.position.set(0, 0, 0); // Reset position
+                    });
+                }
 
                 // Remove line if fully faded out
                 if (line.opacity <= 0 && !line.fadingIn) {
-                    scene.remove(line.mesh);
-                    line.mesh.geometry.dispose();
-                    line.mesh.material.dispose();
+                    scene.remove(line.group);
+                    line.segments.forEach(segment => {
+                        segment.mesh.geometry.dispose();
+                        segment.mesh.material.dispose();
+                    });
                     lines.splice(i, 1);
                 }
             }
