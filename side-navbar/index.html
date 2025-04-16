@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html data-theme="business" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidebar with DaisyUI and Alpine.js</title>
+    <!-- DaisyUI CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+    <!-- Font Awesome for GitHub and other icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <!-- Alpine.js CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Martian+Mono:wght@100..800&display=swap');
+        body {
+            font-family: 'Martian Mono';
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 250px;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            scrollbar-width: thin;
+        }
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            border-radius: 3px;
+        }
+        .sidebar-item:hover {
+            transform: translateX(5px);
+            transition: all 0.2s ease;
+        }
+        .team-logo {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar bg-base-200 shadow-xl" x-data="sidebar()">
+        <div class="p-6 flex flex-col items-center">
+            <!-- Team Logo -->
+            <img src="https://i.ibb.co/h18BLXb0/image-removebg-preview.png" alt="Team Logo" class="team-logo mb-4">
+            <!-- Team Name -->
+            <h2 class="text-xl font-bold text-cyan-500">Team Awesome</h2>
+            <!-- Short Bio -->
+            <p class="text-sm text-center text-base-content/70 mt-2">
+                Innovating cybersecurity through research and open-source solutions.
+            </p>
+        </div>
+        <!-- Line -->
+        <div class="divider my-0"></div>
+        <!-- Navigation -->
+        <ul class="menu p-4">
+            <li>
+                <a href="#home" class="sidebar-item text-base-content hover:text-lime-200 hover:bg-black-600" @click="scrollToSection('home')">
+                    <i class="fas fa-home mr-2"></i> Home
+                </a>
+            </li>
+            <li>
+                <a href="#articles" class="sidebar-item text-base-content hover:text-lime-200 hover:bg-black-600" @click="scrollToSection('articles')">
+                    <i class="fas fa-newspaper mr-2"></i> Articles
+                </a>
+            </li>
+            <li>
+                <a href="#missions" class="sidebar-item text-base-content hover:text-lime-200 hover:bg-black-600" @click="scrollToSection('missions')">
+                    <i class="fas fa-rocket mr-2"></i> Missions
+                </a>
+            </li>
+            <li>
+                <a href="#vulnerability" class="sidebar-item text-base-content hover:text-lime-200 hover:bg-black-600" @click="scrollToSection('vulnerability')">
+                    <i class="fas fa-shield-alt mr-2"></i> Vulnerability R&D
+                </a>
+            </li>
+            <li>
+                <a href="#opensource" class="sidebar-item text-base-content hover:text-lime-200 hover:bg-black-600" @click="scrollToSection('opensource')">
+                    <i class="fas fa-code mr-2"></i> Open-source
+                </a>
+            </li>
+            <li>
+                <a href="#whoarewe" class="sidebar-item text-base-content hover:text-lime-200 hover:bg-black-600" @click="scrollToSection('whoarewe')">
+                    <i class="fas fa-users mr-2"></i> Who Are We
+                </a>
+            </li>
+        </ul>
+        <!-- Line -->
+        <div class="divider my-0"></div>
+        <!-- GitHub Link -->
+        <div class="p-4">
+            <a href="https://github.com" target="_blank" class="btn btn-ghost w-full flex items-center justify-start gap-2 hover:bg-base-300">
+                <i class="fab fa-github text-lg"></i> GitHub
+            </a>
+        </div>
+    </div>
+
+    <!-- Main content (for demo purposes) -->
+    <div class="ml-[250px] p-8">
+        <h1 class="text-3xl font-bold">Main Content Area</h1>
+        <p>This is where your page content goes.</p>
+    </div>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('sidebar', () => ({
+                scrollToSection(sectionId) {
+                    const element = document.getElementById(sectionId);
+                    if (element) {
+                        window.scrollTo({
+                            top: element.offsetTop,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            }));
+        });
+    </script>
+</body>
+</html>
