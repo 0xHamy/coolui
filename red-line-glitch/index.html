@@ -3,205 +3,390 @@
 <head>
     <title>Glitch Animation</title>
     <style>
-        body { margin: 0; overflow: hidden; background: black; }
+        html, body { margin: 0; padding: 0; height: 100%; width: 100%; background-color: #000; }
         canvas { display: block; }
     </style>
 </head>
 <body>
+    <!-- Example container for the animation -->
+    <div id="animation-container" style="width: 100%; height: 100vh;"></div>
+
     <!-- Include Three.js from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script>
-        // Initialization Parameters
-        const config = {
-            lineThickness: 20,           // Line thickness in pixels
-            minLines: 20,               // Minimum number of lines at a time
-            maxLines: 30,              // Maximum number of lines at a time
-            minLength: 500,             // Minimum length of lines in pixels
-            maxLength: 800,             // Maximum length of lines in pixels
-            speed: 1,                   // Speed of appearance/disappearance (0 to 1, higher is faster)
-            proximity: 0.1,             // Proximity factor (0 to 1, 0 = fully dispersed, 1 = tightly clustered)
-            glitch: {
-                segments: 5,            // Number of segments to break the line into (higher = more broken)
-                flickerSpeed: 20,       // Speed of flickering (higher = faster flicker)
-                duration: 0.5,          // Duration of the glitch effect in seconds
-                offsetRange: 10         // Max pixel offset for segments (higher = more chaotic displacement)
-            }
-        };
-
-        // Scene setup
-        const scene = new THREE.Scene();
-        const camera = new THREE.OrthographicCamera(
-            window.innerWidth / -2, 
-            window.innerWidth / 2, 
-            window.innerHeight / 2, 
-            window.innerHeight / -2, 
-            1, 1000
-        );
-        camera.position.z = 5;
-
-        const renderer = new THREE.WebGLRenderer();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
-
-        // Array to store lines
-        const lines = [];
-
-        // Function to create a new line with segmented glitch effect
-        function createLine() {
-            // Random length between minLength and maxLength
-            const length = Math.random() * (config.maxLength - config.minLength) + config.minLength;
-
-            // Create segments for the line
-            const segmentLength = length / config.glitch.segments;
-            const segments = [];
-
-            for (let i = 0; i < config.glitch.segments; i++) {
-                const geometry = new THREE.BufferGeometry();
-                const start = i * segmentLength;
-                const end = (i + 1) * segmentLength;
-                const vertices = new Float32Array([
-                    start, 0, 0,  // Start point of segment
-                    end, 0, 0     // End point of segment
-                ]);
-                geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-
-                // Create material for each segment
-                const material = new THREE.LineBasicMaterial({
-                    color: 0xff0000,
-                    linewidth: config.lineThickness,
-                    transparent: true,
-                    opacity: 0 // Start with 0 opacity
-                });
-
-                const segment = new THREE.Line(geometry, material);
-                segments.push({
-                    mesh: segment,
-                    offset: { x: 0, y: 0 }, // For glitch displacement
-                    flicker: Math.random() // Random flicker phase
-                });
-            }
-
-            // Create a group to hold all segments
-            const lineGroup = new THREE.Group();
-            segments.forEach(segment => lineGroup.add(segment.mesh));
-
-            // Position based on proximity
-            let x, y;
-            if (config.proximity === 0) {
-                // Fully dispersed
-                x = Math.random() * window.innerWidth - window.innerWidth / 2;
-                y = Math.random() * window.innerHeight - window.innerHeight / 2;
-            } else {
-                // Cluster around a random point
-                const clusterX = (Math.random() * window.innerWidth - window.innerWidth / 2);
-                const clusterY = (Math.random() * window.innerHeight - window.innerHeight / 2);
-                const offsetX = (Math.random() - 0.5) * window.innerWidth * config.proximity;
-                const offsetY = (Math.random() - 0.5) * window.innerHeight * config.proximity;
-                x = clusterX + offsetX;
-                y = clusterY + offsetY;
-            }
-            lineGroup.position.set(x, y, 0);
-
-            // Add to scene and lines array
-            scene.add(lineGroup);
-            lines.push({
-                group: lineGroup,
-                segments: segments,
-                lifetime: Math.random() * 0.5 + 0.2, // Base lifetime between 0.2 to 0.7 seconds
-                opacity: 0,
-                fadingIn: true,
-                glitchTimer: 0,
-                isGlitching: true
-            });
-        }
-
-        // Animation loop
-        function animate() {
-            requestAnimationFrame(animate);
-
-            // Ensure minimum number of lines
-            const targetLines = Math.random() * (config.maxLines - config.minLines) + config.minLines;
-            if (lines.length < targetLines && Math.random() < 0.1) { // 10% chance per frame
-                createLine();
-            }
-
-            // Update lines
-            for (let i = lines.length - 1; i >= 0; i--) {
-                const line = lines[i];
-
-                // Handle opacity for smooth appearance/disappearance
-                if (line.fadingIn) {
-                    line.opacity += config.speed * 0.05;
-                    if (line.opacity >= 1) {
-                        line.opacity = 1;
-                        line.fadingIn = false;
-                        line.isGlitching = false; // Stop glitching once fully faded in
-                    }
-                } else {
-                    line.lifetime -= 0.016; // Roughly 60 FPS
-                    if (line.lifetime <= 0) {
-                        line.opacity -= config.speed * 0.05;
-                    }
+        // GlitchAnimation class
+        class GlitchAnimation {
+            constructor(containerId, config) {
+                this.container = document.getElementById(containerId);
+                if (!this.container) {
+                    console.error(`Container with ID "${containerId}" not found.`);
+                    return;
                 }
 
-                // Glitch effect during fade-in
-                if (line.isGlitching) {
-                    line.glitchTimer += 0.016; // Increment timer
-                    if (line.glitchTimer >= config.glitch.duration) {
-                        line.isGlitching = false; // Stop glitching after duration
+                // Default configuration
+                this.config = Object.assign({
+                    lineThickness: 20,
+                    minLines: 2,
+                    maxLines: 5,
+                    minLength: 500,
+                    maxLength: 800,
+                    speed: 1,
+                    proximity: 0.1,
+                    lineStyle: 'solid',
+                    lineColor: 0xff0000,
+                    linePattern: {
+                        dashSize: 10,
+                        gapSize: 5,
+                        dotSize: 2
+                    },
+                    shadow: {
+                        enabled: true,
+                        color: 0xff0000,
+                        intensity: 0.5,
+                        offset: 5,
+                        blur: 2
+                    },
+                    glitch: {
+                        segments: 5,
+                        flickerSpeed: 20,
+                        duration: 0.5,
+                        offsetRange: 10
                     }
+                }, config);
 
-                    // Update each segment
-                    line.segments.forEach(segment => {
-                        // Flicker effect
-                        segment.flicker += 0.016 * config.glitch.flickerSpeed;
-                        const flicker = Math.sin(segment.flicker) > 0 ? line.opacity : 0;
-                        segment.mesh.material.opacity = flicker;
+                this.init();
+            }
 
-                        // Random displacement for glitch effect
-                        if (line.isGlitching) {
-                            segment.offset.x = (Math.random() - 0.5) * config.glitch.offsetRange;
-                            segment.offset.y = (Math.random() - 0.5) * config.glitch.offsetRange;
-                        } else {
-                            segment.offset.x = 0;
-                            segment.offset.y = 0;
+            init() {
+                this.scene = new THREE.Scene();
+                this.camera = new THREE.OrthographicCamera(
+                    this.container.clientWidth / -2,
+                    this.container.clientWidth / 2,
+                    this.container.clientHeight / 2,
+                    this.container.clientHeight / -2,
+                    1, 1000
+                );
+                this.camera.position.z = 5;
+
+                this.renderer = new THREE.WebGLRenderer({ alpha: true });
+                this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+                this.container.appendChild(this.renderer.domElement);
+
+                this.lines = [];
+
+                // Start the animation
+                this.animate = this.animate.bind(this);
+                this.animate();
+
+                // Handle resize
+                this.onResize = this.onResize.bind(this);
+                window.addEventListener('resize', this.onResize);
+            }
+
+            createLineShaderMaterial(style, dashSize, gapSize, dotSize, opacity, color, isShadow = false) {
+                return new THREE.ShaderMaterial({
+                    uniforms: {
+                        uDashSize: { value: dashSize },
+                        uGapSize: { value: gapSize },
+                        uDotSize: { value: dotSize },
+                        uOpacity: { value: opacity },
+                        uStyle: { value: style === 'solid' ? 0 : style === 'dashed' ? 1 : style === 'dotted' ? 2 : style === 'dash-dot' ? 3 : 4 },
+                        uColor: { value: new THREE.Color(isShadow ? this.config.shadow.color : color) },
+                        uIsShadow: { value: isShadow ? 1 : 0 },
+                        uShadowIntensity: { value: this.config.shadow.intensity },
+                        uShadowBlur: { value: this.config.shadow.blur }
+                    },
+                    vertexShader: `
+                        attribute float lineDistance;
+                        varying float vLineDistance;
+                        void main() {
+                            vLineDistance = lineDistance;
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
                         }
-                        segment.mesh.position.set(segment.offset.x, segment.offset.y, 0);
-                    });
-                } else {
-                    // Apply opacity to all segments when not glitching
-                    line.segments.forEach(segment => {
-                        segment.mesh.material.opacity = line.opacity;
-                        segment.mesh.position.set(0, 0, 0); // Reset position
-                    });
-                }
+                    `,
+                    fragmentShader: `
+                        uniform float uDashSize;
+                        uniform float uGapSize;
+                        uniform float uDotSize;
+                        uniform float uOpacity;
+                        uniform int uStyle;
+                        uniform vec3 uColor;
+                        uniform int uIsShadow;
+                        uniform float uShadowIntensity;
+                        uniform float uShadowBlur;
+                        varying float vLineDistance;
+                        void main() {
+                            float alpha = uOpacity;
+                            if (uStyle == 0) {
+                                alpha = uOpacity;
+                            } else if (uStyle == 1) {
+                                float totalLength = uDashSize + uGapSize;
+                                float patternPos = mod(vLineDistance, totalLength);
+                                if (patternPos > uDashSize) {
+                                    alpha = 0.0;
+                                }
+                            } else if (uStyle == 2) {
+                                float totalLength = uDotSize + uGapSize;
+                                float patternPos = mod(vLineDistance, totalLength);
+                                if (patternPos > uDotSize) {
+                                    alpha = 0.0;
+                                }
+                            } else if (uStyle == 3) {
+                                float totalLength = uDashSize + uGapSize + uDotSize + uGapSize;
+                                float patternPos = mod(vLineDistance, totalLength);
+                                if (patternPos > uDashSize && patternPos <= uDashSize + uGapSize) {
+                                    alpha = 0.0;
+                                } else if (patternPos > uDashSize + uGapSize + uDotSize) {
+                                    alpha = 0.0;
+                                }
+                            } else if (uStyle == 4) {
+                                float totalLength = uDashSize + uGapSize + uDotSize + uGapSize + uDotSize + uGapSize;
+                                float patternPos = mod(vLineDistance, totalLength);
+                                if (patternPos > uDashSize && patternPos <= uDashSize + uGapSize) {
+                                    alpha = 0.0;
+                                } else if (patternPos > uDashSize + uGapSize + uDotSize && patternPos <= uDashSize + uGapSize + uDotSize + uGapSize) {
+                                    alpha = 0.0;
+                                } else if (patternPos > uDashSize + uGapSize + uDotSize + uGapSize + uDotSize) {
+                                    alpha = 0.0;
+                                }
+                            }
 
-                // Remove line if fully faded out
-                if (line.opacity <= 0 && !line.fadingIn) {
-                    scene.remove(line.group);
-                    line.segments.forEach(segment => {
-                        segment.mesh.geometry.dispose();
-                        segment.mesh.material.dispose();
-                    });
-                    lines.splice(i, 1);
-                }
+                            if (uIsShadow == 1) {
+                                alpha *= uShadowIntensity;
+                            }
+
+                            gl_FragColor = vec4(uColor, alpha);
+                        }
+                    `,
+                    transparent: true,
+                    linewidth: isShadow ? this.config.lineThickness + this.config.shadow.blur : this.config.lineThickness
+                });
             }
 
-            renderer.render(scene, camera);
+            createLine() {
+                const length = Math.random() * (this.config.maxLength - this.config.minLength) + this.config.minLength;
+                const segmentLength = length / this.config.glitch.segments;
+                const segments = [];
+                const shadowSegments = [];
+
+                if (this.config.shadow.enabled) {
+                    for (let i = 0; i < this.config.glitch.segments; i++) {
+                        const geometry = new THREE.BufferGeometry();
+                        const start = i * segmentLength;
+                        const end = (i + 1) * segmentLength;
+                        const vertices = new Float32Array([
+                            start, 0, 0,
+                            end, 0, 0
+                        ]);
+                        const distances = new Float32Array([start, end]);
+                        geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+                        geometry.setAttribute('lineDistance', new THREE.BufferAttribute(distances, 1));
+
+                        const material = this.createLineShaderMaterial(
+                            this.config.lineStyle,
+                            this.config.linePattern.dashSize,
+                            this.config.linePattern.gapSize,
+                            this.config.linePattern.dotSize,
+                            0,
+                            this.config.lineColor,
+                            true
+                        );
+
+                        const segment = new THREE.Line(geometry, material);
+                        shadowSegments.push({
+                            mesh: segment,
+                            offset: { x: 0, y: 0 },
+                            flicker: Math.random()
+                        });
+                    }
+                }
+
+                for (let i = 0; i < this.config.glitch.segments; i++) {
+                    const geometry = new THREE.BufferGeometry();
+                    const start = i * segmentLength;
+                    const end = (i + 1) * segmentLength;
+                    const vertices = new Float32Array([
+                        start, 0, 0,
+                        end, 0, 0
+                    ]);
+                    const distances = new Float32Array([start, end]);
+                    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+                    geometry.setAttribute('lineDistance', new THREE.BufferAttribute(distances, 1));
+
+                    const material = this.createLineShaderMaterial(
+                        this.config.lineStyle,
+                        this.config.linePattern.dashSize,
+                        this.config.linePattern.gapSize,
+                        this.config.linePattern.dotSize,
+                        0,
+                        this.config.lineColor,
+                        false
+                    );
+
+                    const segment = new THREE.Line(geometry, material);
+                    segments.push({
+                        mesh: segment,
+                        offset: { x: 0, y: 0 },
+                        flicker: Math.random()
+                    });
+                }
+
+                const lineGroup = new THREE.Group();
+                shadowSegments.forEach(segment => lineGroup.add(segment.mesh));
+                segments.forEach(segment => lineGroup.add(segment.mesh));
+
+                let x, y;
+                if (this.config.proximity === 0) {
+                    x = Math.random() * this.container.clientWidth - this.container.clientWidth / 2;
+                    y = Math.random() * this.container.clientHeight - this.container.clientHeight / 2;
+                } else {
+                    const clusterX = (Math.random() * this.container.clientWidth - this.container.clientWidth / 2);
+                    const clusterY = (Math.random() * this.container.clientHeight - this.container.clientHeight / 2);
+                    const offsetX = (Math.random() - 0.5) * this.container.clientWidth * this.config.proximity;
+                    const offsetY = (Math.random() - 0.5) * this.container.clientHeight * this.config.proximity;
+                    x = clusterX + offsetX;
+                    y = clusterY + offsetY;
+                }
+                lineGroup.position.set(x, y, 0);
+
+                this.scene.add(lineGroup);
+                this.lines.push({
+                    group: lineGroup,
+                    segments: segments,
+                    shadowSegments: shadowSegments,
+                    lifetime: Math.random() * 0.5 + 0.2,
+                    opacity: 0,
+                    fadingIn: true,
+                    glitchTimer: 0,
+                    isGlitching: true
+                });
+            }
+
+            animate() {
+                requestAnimationFrame(this.animate);
+
+                // Ensure at least minLines are on the screen
+                while (this.lines.length < this.config.minLines) {
+                    this.createLine();
+                }
+
+                // Add new lines up to maxLines with a probability
+                const targetLines = Math.random() * (this.config.maxLines - this.config.minLines) + this.config.minLines;
+                if (this.lines.length < targetLines && Math.random() < 0.1) {
+                    this.createLine();
+                }
+
+                for (let i = this.lines.length - 1; i >= 0; i--) {
+                    const line = this.lines[i];
+
+                    if (line.fadingIn) {
+                        line.opacity += this.config.speed * 0.05;
+                        if (line.opacity >= 1) {
+                            line.opacity = 1;
+                            line.fadingIn = false;
+                            line.isGlitching = false;
+                        }
+                    } else {
+                        line.lifetime -= 0.016;
+                        if (line.lifetime <= 0) {
+                            line.opacity -= this.config.speed * 0.05;
+                        }
+                    }
+
+                    if (line.isGlitching) {
+                        line.glitchTimer += 0.016;
+                        if (line.glitchTimer >= this.config.glitch.duration) {
+                            line.isGlitching = false;
+                        }
+
+                        line.segments.forEach(segment => {
+                            segment.flicker += 0.016 * this.config.glitch.flickerSpeed;
+                            const flicker = Math.sin(segment.flicker) > 0 ? line.opacity : 0;
+                            segment.mesh.material.uniforms.uOpacity.value = flicker;
+
+                            if (line.isGlitching) {
+                                segment.offset.x = (Math.random() - 0.5) * this.config.glitch.offsetRange;
+                                segment.offset.y = (Math.random() - 0.5) * this.config.glitch.offsetRange;
+                            } else {
+                                segment.offset.x = 0;
+                                segment.offset.y = 0;
+                            }
+                            segment.mesh.position.set(segment.offset.x, segment.offset.y, 0);
+                        });
+
+                        if (this.config.shadow.enabled) {
+                            line.shadowSegments.forEach(segment => {
+                                segment.flicker += 0.016 * this.config.glitch.flickerSpeed;
+                                const flicker = Math.sin(segment.flicker) > 0 ? line.opacity : 0;
+                                segment.mesh.material.uniforms.uOpacity.value = flicker;
+
+                                if (line.isGlitching) {
+                                    segment.offset.x = (Math.random() - 0.5) * this.config.glitch.offsetRange + this.config.shadow.offset;
+                                    segment.offset.y = (Math.random() - 0.5) * this.config.glitch.offsetRange + this.config.shadow.offset;
+                                } else {
+                                    segment.offset.x = this.config.shadow.offset;
+                                    segment.offset.y = this.config.shadow.offset;
+                                }
+                                segment.mesh.position.set(segment.offset.x, segment.offset.y, 0);
+                            });
+                        }
+                    } else {
+                        line.segments.forEach(segment => {
+                            segment.mesh.material.uniforms.uOpacity.value = line.opacity;
+                            segment.mesh.position.set(0, 0, 0);
+                        });
+
+                        if (this.config.shadow.enabled) {
+                            line.shadowSegments.forEach(segment => {
+                                segment.mesh.material.uniforms.uOpacity.value = line.opacity;
+                                segment.mesh.position.set(this.config.shadow.offset, this.config.shadow.offset, 0);
+                            });
+                        }
+                    }
+
+                    if (line.opacity <= 0 && !line.fadingIn) {
+                        this.scene.remove(line.group);
+                        line.segments.forEach(segment => {
+                            segment.mesh.geometry.dispose();
+                            segment.mesh.material.dispose();
+                        });
+                        if (this.config.shadow.enabled) {
+                            line.shadowSegments.forEach(segment => {
+                                segment.mesh.geometry.dispose();
+                                segment.mesh.material.dispose();
+                            });
+                        }
+                        this.lines.splice(i, 1);
+                    }
+                }
+
+                this.renderer.render(this.scene, this.camera);
+            }
+
+            onResize() {
+                this.camera.left = this.container.clientWidth / -2;
+                this.camera.right = this.container.clientWidth / 2;
+                this.camera.top = this.container.clientHeight / 2;
+                this.camera.bottom = this.container.clientHeight / -2;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+            }
+
+            destroy() {
+                window.removeEventListener('resize', this.onResize);
+                this.renderer.dispose();
+                this.scene = null;
+                this.camera = null;
+                this.lines = [];
+                this.container.removeChild(this.renderer.domElement);
+            }
         }
 
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            camera.left = window.innerWidth / -2;
-            camera.right = window.innerWidth / 2;
-            camera.top = window.innerHeight / 2;
-            camera.bottom = window.innerHeight / -2;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+        // Initialize the animation
+        const animation = new GlitchAnimation('animation-container', {
+            minLines: 20,
+            maxLines: 30
         });
-
-        // Start the animation
-        animate();
     </script>
 </body>
 </html>
