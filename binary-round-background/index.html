@@ -6,7 +6,17 @@
     <title>Three.js 0s and 1s Tunnel Animation</title>
     <style>
         body { margin: 0; overflow: hidden; background: #000; }
-        canvas { display: block; }
+        canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; }
+        #center-element {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -57,33 +67,65 @@
 
         // Initialization function
         function init({
-            zeroColor = '#ffffff', // Default color for 0s (white)
-            oneColor = '#ffffff',  // Default color for 1s (white)
-            speed = 0.5,          // Default speed
-            numberSize = 1        // Default size of numbers
+            zeroColor = '#ffffff',    // Default color for 0s (white)
+            oneColor = '#ffffff',     // Default color for 1s (white)
+            speed = 0.5,             // Default speed
+            numberSize = 1,          // Default size of numbers
+            totalAmount = 200,       // Default total number of sprites (100 0s + 100 1s)
+            centerElementId = null,  // Optional: ID for the center element
+            blackHoleSize = 30       // Default radius of the black hole (cylinder)
         } = {}) {
+            // Position the center element if provided
+            if (centerElementId) {
+                const centerElement = document.getElementById(centerElementId);
+                if (centerElement) {
+                    centerElement.classList.add('center-element');
+                } else {
+                    console.warn(`Element with ID "${centerElementId}" not found.`);
+                }
+            }
+
             // Create textures with specified colors
             createTextures(zeroColor, oneColor);
 
             // Create a cylindrical tunnel of 0s and 1s
-            const radius = 30; // Radius of the cylinder
+            const radius = blackHoleSize; // Use blackHoleSize as the radius of the cylinder
             const depth = 100; // Depth of the tunnel
-            const numSprites = 200; // Number of sprites
+            const numZeros = Math.floor(totalAmount / 2); // Equal number of 0s
+            const numOnes = Math.floor(totalAmount / 2);  // Equal number of 1s
             const sprites = [];
 
-            for (let i = 0; i < numSprites; i++) {
+            // Create 0s
+            for (let i = 0; i < numZeros; i++) {
                 const theta = Math.random() * Math.PI * 2; // Angle around the cylinder
                 const z = (Math.random() - 0.5) * depth; // Position along the depth
                 const opacity = 1 - Math.abs(z) / (depth / 2); // Fade based on depth
 
-                const sprite = createTextSprite(Math.random() > 0.5 ? '0' : '1', numberSize);
+                const sprite = createTextSprite('0', numberSize);
                 sprite.position.set(
                     radius * Math.cos(theta),
                     radius * Math.sin(theta),
                     z
                 );
                 sprite.material.opacity = opacity;
-                sprites.push({ sprite, z, theta, text: sprite.material.map === textures['0'] ? '0' : '1' });
+                sprites.push({ sprite, z, theta, text: '0' });
+                group.add(sprite);
+            }
+
+            // Create 1s
+            for (let i = 0; i < numOnes; i++) {
+                const theta = Math.random() * Math.PI * 2; // Angle around the cylinder
+                const z = (Math.random() - 0.5) * depth; // Position along the depth
+                const opacity = 1 - Math.abs(z) / (depth / 2); // Fade based on depth
+
+                const sprite = createTextSprite('1', numberSize);
+                sprite.position.set(
+                    radius * Math.cos(theta),
+                    radius * Math.sin(theta),
+                    z
+                );
+                sprite.material.opacity = opacity;
+                sprites.push({ sprite, z, theta, text: '1' });
                 group.add(sprite);
             }
 
@@ -98,10 +140,8 @@
                     let newZ = spriteData.z + speed; // Use the speed parameter
                     if (newZ > depth / 2) {
                         newZ -= depth; // Loop back
-                        // Randomly change the text when looping
-                        const newText = Math.random() > 0.5 ? '0' : '1';
-                        spriteData.sprite.material.map = textures[newText];
-                        spriteData.text = newText;
+                        // Maintain the same text (0 or 1) to keep the count equal
+                        spriteData.sprite.material.map = textures[spriteData.text];
                     }
 
                     // Update sprite position
@@ -135,7 +175,10 @@
             zeroColor: '#cc2149',
             oneColor: '#079be6',
             speed: 0.2, 
-            numberSize: 2 
+            numberSize: 2,
+            totalAmount: 300, // 50 0s + 50 1s
+            // centerElementId: 'centerElement', // Optional: Uncomment to use a center element
+            blackHoleSize: 30 // Larger black hole
         });
     </script>
 </body>
