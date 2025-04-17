@@ -329,19 +329,19 @@
         // Initialize the animation as the body background
         const animation = new HexagonalAnimation('body', {
             // Example: You can override defaults here if desired
-            // hexagonColors: [0xFF0000, 0x00FF00, 0x0000FF], // Red, Green, Blue
-            // lineComplexity: 5,
+            hexagonColors: [0xfc7456, 0xfc5c56, 0xd93664],
+            lineComplexity: 8,
             // overlayColor: 0x333333,
-            overlayOpacity: 0.7,
-            // movementSpeed: 0.002,
-            // numHexagons: 40,
+            overlayOpacity: 0.9,
+            movementSpeed: 0.002,
+            numHexagons: 40,
             // numLines: 5,
-            // glowIntensity: 0.5,
-            // glowLineWidth: 6,
+            glowIntensity: 2,
+            glowLineWidth: 4,
             // borderType: 'dashed',
-            // disperseFactor: 0.8,
+            disperseFactor: 1.1,
             // hexagonSizeRange: [0.3, 0.8],
-            // lineColor: 0xFFFFFF
+            lineColor: 0xFFFFFF
         });
 
         console.log('Use Arrow Up to increase overlay opacity (less visible), Arrow Down to decrease (more visible)');
