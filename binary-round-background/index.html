@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js 0s and 1s Tunnel Animation</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Global variables
+        let textures = {};
+
+        // Initialize scene, camera, and renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000, 0); // Transparent background
+        document.body.appendChild(renderer.domElement);
+
+        // Camera position
+        camera.position.set(0, 0, 50);
+        camera.lookAt(0, 0, 0);
+
+        // Create a group to hold the text sprites
+        const group = new THREE.Group();
+        scene.add(group);
+
+        // Function to pre-generate textures for "0" and "1"
+        function createTextures(zeroColor, oneColor) {
+            ['0', '1'].forEach((text, index) => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 32;
+                canvas.height = 32;
+                const ctx = canvas.getContext('2d');
+                ctx.font = '24px Arial';
+                ctx.fillStyle = index === 0 ? zeroColor : oneColor; // zeroColor for "0", oneColor for "1"
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, 16, 16);
+                textures[text] = new THREE.CanvasTexture(canvas);
+            });
+        }
+
+        // Create a sprite with a given text
+        function createTextSprite(text, numberSize) {
+            const material = new THREE.SpriteMaterial({ map: textures[text], transparent: true });
+            const sprite = new THREE.Sprite(material);
+            sprite.scale.set(numberSize, numberSize, 1); // Scale based on numberSize
+            return sprite;
+        }
+
+        // Initialization function
+        function init({
+            zeroColor = '#ffffff', // Default color for 0s (white)
+            oneColor = '#ffffff',  // Default color for 1s (white)
+            speed = 0.5,          // Default speed
+            numberSize = 1        // Default size of numbers
+        } = {}) {
+            // Create textures with specified colors
+            createTextures(zeroColor, oneColor);
+
+            // Create a cylindrical tunnel of 0s and 1s
+            const radius = 30; // Radius of the cylinder
+            const depth = 100; // Depth of the tunnel
+            const numSprites = 200; // Number of sprites
+            const sprites = [];
+
+            for (let i = 0; i < numSprites; i++) {
+                const theta = Math.random() * Math.PI * 2; // Angle around the cylinder
+                const z = (Math.random() - 0.5) * depth; // Position along the depth
+                const opacity = 1 - Math.abs(z) / (depth / 2); // Fade based on depth
+
+                const sprite = createTextSprite(Math.random() > 0.5 ? '0' : '1', numberSize);
+                sprite.position.set(
+                    radius * Math.cos(theta),
+                    radius * Math.sin(theta),
+                    z
+                );
+                sprite.material.opacity = opacity;
+                sprites.push({ sprite, z, theta, text: sprite.material.map === textures['0'] ? '0' : '1' });
+                group.add(sprite);
+            }
+
+            // Animation loop
+            let time = 0;
+            function animate() {
+                requestAnimationFrame(animate);
+
+                // Animate sprites
+                sprites.forEach((spriteData, index) => {
+                    // Move sprites along z-axis for tunnel effect
+                    let newZ = spriteData.z + speed; // Use the speed parameter
+                    if (newZ > depth / 2) {
+                        newZ -= depth; // Loop back
+                        // Randomly change the text when looping
+                        const newText = Math.random() > 0.5 ? '0' : '1';
+                        spriteData.sprite.material.map = textures[newText];
+                        spriteData.text = newText;
+                    }
+
+                    // Update sprite position
+                    spriteData.sprite.position.z = newZ;
+                    // Update stored z
+                    sprites[index].z = newZ;
+
+                    // Update opacity based on new z position
+                    const opacity = 1 - Math.abs(newZ) / (depth / 2);
+                    spriteData.sprite.material.opacity = opacity;
+                });
+
+                // Rotate the group
+                group.rotation.z += 0.005;
+
+                time += 0.01;
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Call the init function with custom parameters
+        init({
+            zeroColor: '#cc2149',
+            oneColor: '#079be6',
+            speed: 0.2, 
+            numberSize: 2 
+        });
+    </script>
+</body>
+</html>
