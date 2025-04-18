@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tailwind Dual Navbar</title>
+    <title>Tailwind Dual Navbar with jQuery</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -38,7 +38,7 @@
         <div class="flex justify-between items-center px-4 py-3">
             <!-- Logo and Sidebar Toggle -->
             <div class="flex items-center space-x-4">
-                <button class="md:hidden focus:outline-none" id="sidebar-toggle">
+                <button class="md:hidden focus:outline-none sidebar-toggle">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
@@ -51,10 +51,10 @@
                 <a href="#" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700">Courses</a>
                 <!-- Avatar Dropdown -->
                 <div class="relative">
-                    <button class="flex items-center space-x-2 focus:outline-none" id="avatar-dropdown">
+                    <button class="flex items-center space-x-2 focus:outline-none avatar-dropdown">
                         <img src="https://avatar.iran.liara.run/public" alt="User Avatar" class="w-8 h-8 rounded-full">
                     </button>
-                    <div class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg hidden z-50" id="dropdown-menu">
+                    <div class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg hidden z-50 dropdown-menu">
                         <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700">Profile</a>
                         <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700">Settings</a>
                         <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700">Logout</a>
@@ -62,14 +62,14 @@
                 </div>
             </div>
             <!-- Mobile Menu Button -->
-            <button class="md:hidden focus:outline-none" id="mobile-menu-button">
+            <button class="md:hidden focus:outline-none mobile-menu-button">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                 </svg>
             </button>
         </div>
     </nav>
-    <!-- Mobile Menu (hidden by default, slides from right) -->
+    <!-- Mobile Menu (slides from right) -->
     <div id="mobile-menu" class="md:hidden fixed top-16 right-0 w-64 h-[calc(100vh-64px)] bg-gray-800 px-4 py-2 z-40 mobile-menu mobile-menu-hidden">
         <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700">Dashboard</a>
         <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700">Courses</a>
@@ -110,6 +110,7 @@
                         <li><a href="#" class="text-sm hover:text-blue-400">Section 3.2: Case Studies</a></li>
                     </ul>
                 </details>
+
             </div>
         </aside>
 
@@ -122,43 +123,40 @@
         </main>
     </div>
 
-    <!-- JavaScript for Interactivity -->
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
-        // Avatar Dropdown
-        const avatarButton = document.getElementById('avatar-dropdown');
-        const dropdownMenu = document.getElementById('dropdown-menu');
-        avatarButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            dropdownMenu.classList.toggle('hidden');
-        });
+        $(document).ready(function() {
+            // Mobile Menu Toggle
+            $('.mobile-menu-button').click(function(e) {
+                e.stopPropagation();
+                $('#mobile-menu').toggleClass('mobile-menu-hidden');
+            });
 
-        // Mobile Menu
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
-        const mobileMenu = document.getElementById('mobile-menu');
-        mobileMenuButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            mobileMenu.classList.toggle('mobile-menu-hidden');
-        });
+            // Sidebar Toggle
+            $('.sidebar-toggle').click(function(e) {
+                e.stopPropagation();
+                $('#sidebar').toggleClass('sidebar-hidden');
+            });
 
-        // Sidebar Toggle
-        const sidebarToggle = document.getElementById('sidebar-toggle');
-        const sidebar = document.getElementById('sidebar');
-        sidebarToggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            sidebar.classList.toggle('sidebar-hidden');
-        });
+            // Avatar Dropdown Toggle
+            $('.avatar-dropdown').click(function(e) {
+                e.stopPropagation();
+                $('.dropdown-menu').fadeToggle(200);
+            });
 
-        // Close dropdown and menus when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!avatarButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                dropdownMenu.classList.add('hidden');
-            }
-            if (!mobileMenuButton.contains(e.target) && !mobileMenu.contains(e.target)) {
-                mobileMenu.classList.add('mobile-menu-hidden');
-            }
-            if (!sidebarToggle.contains(e.target) && !sidebar.contains(e.target)) {
-                sidebar.classList.add('sidebar-hidden');
-            }
+            // Close menus on outside click
+            $(document).click(function(e) {
+                if (!$(e.target).closest('.mobile-menu-button, #mobile-menu').length) {
+                    $('#mobile-menu').addClass('mobile-menu-hidden');
+                }
+                if (!$(e.target).closest('.sidebar-toggle, #sidebar').length) {
+                    $('#sidebar').addClass('sidebar-hidden');
+                }
+                if (!$(e.target).closest('.avatar-dropdown, .dropdown-menu').length) {
+                    $('.dropdown-menu').fadeOut(200);
+                }
+            });
         });
     </script>
 </body>
