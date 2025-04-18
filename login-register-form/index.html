@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tailwind Tabs with Enhanced Forms, QR Code, and OTP Inputs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body class="bg-gray-900 min-h-screen flex items-center justify-center">
+    <div class="w-full max-w-md mx-auto">
+        <!-- Tabs Container -->
+        <div class="bg-gray-800 rounded-lg shadow-lg">
+            <!-- Tab Headers -->
+            <div class="flex border-b border-gray-700">
+                <button class="w-1/2 py-3 text-center text-gray-300 font-semibold hover:bg-gray-700 focus:outline-none active-tab" data-tab="register">
+                    Register
+                </button>
+                <button class="w-1/2 py-3 text-center text-gray-300 font-semibold hover:bg-gray-700 focus:outline-none" data-tab="login">
+                    Login
+                </button>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="p-6">
+                <!-- Register Tab -->
+                <div id="register" class="tab-content">
+                    <!-- Step 1: Email Input -->
+                    <div id="register-step-1">
+                        <form id="register-email-form" class="space-y-4">
+                            <div>
+                                <label for="register-email" class="block text-sm font-medium text-gray-400">Email</label>
+                                <input type="email" id="register-email" name="email" required class="mt-1 w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="you@example.com">
+                            </div>
+                            <button type="submit" id="register-continue" disabled class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-md text-white font-semibold transition-colors opacity-50 cursor-not-allowed">Continue</button>
+                        </form>
+                    </div>
+
+                    <!-- Step 2: CAPTCHA -->
+                    <div id="register-step-2" class="hidden">
+                        <div class="space-y-4">
+                            <p class="text-gray-400 text-sm">Solve the CAPTCHA to proceed</p>
+                            <div class="bg-gray-700 p-4 rounded-md text-center">
+                                <p class="text-gray-200">Mock CAPTCHA: Select all images with traffic lights</p>
+                                <div class="grid grid-cols-3 gap-2 mt-2">
+                                    <img src="https://via.placeholder.com/50" alt="CAPTCHA Image" class="border border-gray-600 rounded cursor-pointer">
+                                    <img src="https://via.placeholder.com/50" alt="CAPTCHA Image" class="border border-gray-600 rounded cursor-pointer">
+                                    <img src="https://via.placeholder.com/50" alt="CAPTCHA Image" class="border border-gray-600 rounded cursor-pointer">
+                                </div>
+                                <button id="captcha-submit" class="mt-4 py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-md text-white font-semibold transition-colors">Submit CAPTCHA</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: QR Code and OTP Input -->
+                    <div id="register-step-3" class="hidden">
+                        <div class="space-y-4">
+                            <p class="text-gray-400 text-sm">Set up two-factor authentication:</p>
+                            <div class="bg-gray-700 p-4 rounded-md text-center">
+                                <p class="text-gray-200 mb-2">1. Scan this QR code with an authenticator app (e.g., Google Authenticator, Authy).</p>
+                                <img src="https://via.placeholder.com/150x150?text=QR+Code" alt="Mock QR Code" class="mx-auto border border-gray-600 rounded">
+                                <p class="text-gray-200 mt-2">2. Enter the 6-digit code from your authenticator app below.</p>
+                            </div>
+                            <form id="register-otp-form" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400">Enter Authenticator Code</label>
+                                    <div class="flex space-x-2 mt-1 justify-center">
+                                        <input type="text" maxlength="1" class="otp-input w-10 h-10 text-center bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" pattern="[0-9]" required>
+                                        <input type="text" maxlength="1" class="otp-input w-10 h-10 text-center bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" pattern="[0-9]" required>
+                                        <input type="text" maxlength="1" class="otp-input w-10 h-10 text-center bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" pattern="[0-9]" required>
+                                        <input type="text" maxlength="1" class="otp-input w-10 h-10 text-center bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" pattern="[0-9]" required>
+                                        <input type="text" maxlength="1" class="otp-input w-10 h-10 text-center bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" pattern="[0-9]" required>
+                                        <input type="text" maxlength="1" class="otp-input w-10 h-10 text-center bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" pattern="[0-9]" required>
+                                    </div>
+                                </div>
+                                <button type="submit" id="otp-submit" disabled class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-md text-white font-semibold transition-colors opacity-50 cursor-not-allowed">Done</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Username & Password -->
+                    <div id="register-step-4" class="hidden">
+                        <form id="register-final-form" class="space-y-4">
+                            <div>
+                                <label for="register-username" class="block text-sm font-medium text-gray-400">Username</label>
+                                <input type="text" id="register-username" name="username" required minlength="3" class="mt-1 w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="johndoe">
+                            </div>
+                            <div>
+                                <label for="register-password" class="block text-sm font-medium text-gray-400">Password</label>
+                                <input type="password" id="register-password" name="password" required minlength="8" class="mt-1 w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="********">
+                            </div>
+                            <button type="submit" id="register-final-submit" disabled class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-md text-white font-semibold transition-colors opacity-50 cursor-not-allowed">Create Account</button>
+                        </form>
+                    </div>
+
+                    <!-- Step 5: Success Message -->
+                    <div id="register-step-5" class="hidden">
+                        <p class="text-gray-200 text-center">Account created successfully!</p>
+                    </div>
+                </div>
+
+                <!-- Login Tab -->
+                <div id="login" class="tab-content hidden">
+                    <!-- Step 1: Username & Password -->
+                    <div id="login-step-1">
+                        <form id="login-form" class="space-y-4">
+                            <div>
+                                <label for="login-username" class="block text-sm font-medium text-gray-400">Username or Email</label>
+                                <input type="text" id="login-username" name="username" required class="mt-1 w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="johndoe or you@example.com">
+                            </div>
+                            <div>
+                                <label for="login-password" class="block text-sm font-medium text-gray-400">Password</label>
+                                <input type="password" id="login-password" name="password" required class="mt-1 w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="********">
+                            </div>
+                            <button type="submit" id="login-next" disabled class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-md text-white font-semibold transition-colors opacity-50 cursor-not-allowed">Next</button>
+                        </form>
+                    </div>
+
+                    <!-- Step 2: OTP Input -->
+                    <div id="login-step-2" class="hidden">
+                        <form id="login-otp-form" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400">Enter Authenticator Code</label>
+                                <div class="flex space-x-2 mt-1 justify-center">
+                                    <input type="text" maxlength="1" class="otp-input w-10 h-10 text-center bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" pattern="[0-9]" required>
+                                    <input type="text" maxlength="1" class="otp-input w-10 h-10 text-center bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" pattern="[0-9]" required>
+                                    <input type="text" maxlength="1" class="otp-input w-10 h-10 text-center bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" pattern="[0-9]" required>
+                                    <input type="text" maxlength="1" class="otp-input w-10 h-10 text-center bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" pattern="[0-9]" required>
+                                    <input type="text" maxlength="1" class="otp-input w-10 h-10 text-center bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" pattern="[0-9]" required>
+                                    <input type="text" maxlength="1" class="otp-input w-10 h-10 text-center bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" pattern="[0-9]" required>
+                                </div>
+                            </div>
+                            <button type="submit" id="login-submit" disabled class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-md text-white font-semibold transition-colors opacity-50 cursor-not-allowed">Login</button>
+                        </form>
+                    </div>
+
+                    <!-- Step 3: Success Message -->
+                    <div id="login-step-3" class="hidden">
+                        <p class="text-gray-200 text-center">Login successful!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery Script for Tab Switching and Form Handling -->
+    <script>
+        $(document).ready(function() {
+            // Tab Switching
+            $('[data-tab]').on('click', function() {
+                $('[data-tab]').removeClass('active-tab bg-gray-700').addClass('text-gray-300');
+                $(this).addClass('active-tab bg-gray-700');
+                $('.tab-content').addClass('hidden');
+                $(`#${$(this).data('tab')}`).removeClass('hidden');
+
+                // Reset forms when switching tabs
+                $('form').trigger('reset');
+                $('.otp-input').val('');
+                $('button[type="submit"]').addClass('opacity-50 cursor-not-allowed').prop('disabled', true);
+                $('.register-step, .login-step').addClass('hidden');
+                $('#register-step-1, #login-step-1').removeClass('hidden');
+            });
+
+            // OTP Input Handling (for both register and login)
+            function handleOtpInput(formId, submitButtonId) {
+                $(`${formId} .otp-input`).on('input', function(e) {
+                    const $this = $(this);
+                    const value = $this.val();
+
+                    // Allow only digits
+                    if (value && !/^[0-9]$/.test(value)) {
+                        $this.val('');
+                        return;
+                    }
+
+                    // Move to next input on valid digit
+                    if (value) {
+                        $this.next('.otp-input').focus();
+                    }
+
+                    // Check if all OTP inputs are filled
+                    const otpValues = $(`${formId} .otp-input`).map(function() {
+                        return $(this).val();
+                    }).get();
+
+                    if (otpValues.length === 6 && otpValues.every(val => /^[0-9]$/.test(val))) {
+                        $(submitButtonId).removeClass('opacity-50 cursor-not-allowed').prop('disabled', false);
+                    } else {
+                        $(submitButtonId).addClass('opacity-50 cursor-not-allowed').prop('disabled', true);
+                    }
+                });
+
+                // Handle backspace to move to previous input
+                $(`${formId} .otp-input`).on('keydown', function(e) {
+                    if (e.key === 'Backspace' && !$(this).val()) {
+                        $(this).prev('.otp-input').focus();
+                    }
+                });
+
+                // Prevent non-numeric input
+                $(`${formId} .otp-input`).on('keypress', function(e) {
+                    if (!/[0-9]/.test(e.key)) {
+                        e.preventDefault();
+                    }
+                });
+            }
+
+            // Apply OTP handling to both forms
+            handleOtpInput('#register-otp-form', '#otp-submit');
+            handleOtpInput('#login-otp-form', '#login-submit');
+
+            // Register: Step 1 - Email Validation
+            $('#register-email').on('input', function() {
+                const email = $(this).val();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (emailRegex.test(email)) {
+                    $('#register-continue').removeClass('opacity-50 cursor-not-allowed').prop('disabled', false);
+                } else {
+                    $('#register-continue').addClass('opacity-50 cursor-not-allowed').prop('disabled', true);
+                }
+            });
+
+            $('#register-email-form').on('submit', function(e) {
+                e.preventDefault();
+                $('#register-step-1').addClass('hidden');
+                $('#register-step-2').removeClass('hidden');
+            });
+
+            // Register: Step 2 - Mock CAPTCHA
+            $('#captcha-submit').on('click', function() {
+                $('#register-step-2').addClass('hidden');
+                $('#register-step-3').removeClass('hidden');
+            });
+
+            // Register: Step 3 - OTP Form Submission
+            $('#register-otp-form').on('submit', function(e) {
+                e.preventDefault();
+                $('#register-step-3').addClass('hidden');
+                $('#register-step-4').removeClass('hidden');
+            });
+
+            // Register: Step 4 - Username & Password Validation
+            $('#register-username, #register-password').on('input', function() {
+                const username = $('#register-username').val();
+                const password = $('#register-password').val();
+                if (username.length >= 3 && password.length >= 8) {
+                    $('#register-final-submit').removeClass('opacity-50 cursor-not-allowed').prop('disabled', false);
+                } else {
+                    $('#register-final-submit').addClass('opacity-50 cursor-not-allowed').prop('disabled', true);
+                }
+            });
+
+            $('#register-final-form').on('submit', function(e) {
+                e.preventDefault();
+                $('#register-step-4').addClass('hidden');
+                $('#register-step-5').removeClass('hidden');
+            });
+
+            // Login: Step 1 - Username & Password Validation
+            $('#login-username, #login-password').on('input', function() {
+                const username = $('#login-username').val();
+                const password = $('#login-password').val();
+                if (username.length > 0 && password.length > 0) {
+                    $('#login-next').removeClass('opacity-50 cursor-not-allowed').prop('disabled', false);
+                } else {
+                    $('#login-next').addClass('opacity-50 cursor-not-allowed').prop('disabled', true);
+                }
+            });
+
+            $('#login-form').on('submit', function(e) {
+                e.preventDefault();
+                $('#login-step-1').addClass('hidden');
+                $('#login-step-2').removeClass('hidden');
+            });
+
+            // Login: Step 2 - OTP Form Submission
+            $('#login-otp-form').on('submit', function(e) {
+                e.preventDefault();
+                $('#login-step-2').addClass('hidden');
+                $('#login-step-3').removeClass('hidden');
+            });
+        });
+    </script>
+</body>
+</html>
