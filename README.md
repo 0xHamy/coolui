@@ -34,4 +34,8 @@ If you are looking for an animation that could keep people looking more than jus
 <br><br>
 
 
-### 
+### Hexagonal network
+This animation only works on chrome.
+If you are looking for modern background that keeps changing on every load, this is something you should look into:
+![Hexagonal network demo](./hexagon-background/demo.png)
+
