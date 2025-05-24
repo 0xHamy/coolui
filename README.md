@@ -86,4 +86,31 @@ If you are looking for a cyberpunk-style animation, this is something you should
 This is a Linux terminal animation, certain commands are entered in loop and their output is displayed. It could be used on Hero section of a website. 
 ![Terminal commands demo](./terminal-commands/demo.png)
 
+<br><br>
+
+
+### Navbar + Sidebar
+If you are looking to create a course and your course is going to have several sections, you may want to make all sections easily accessible to user with a sidebar. 
+![Navbar & Sidebar demo](./top-nav-and-sidebar/demo.png)
+
+<br><br>
+
+
+### Rainbow background animation
+If you are looking for a screen-saver-like background, this is it:
+
+![Rainbow triangles demo](./rainbow-traingles/demo.png)
+
+<br><br>
+
+
+### Blog sidebar
+This may be the perfect starter template for creating your own solo or team blog, it was written in DaisyUI:
+
+![Blog Sidebar demo](./blog-sidebar/demo.png)
+
+<br><br>
+
+
+### 
 
