@@ -58,4 +58,20 @@ This animation was specifically created for images but it can be applied to any 
 This is a Tailwindcss multi-step register & login page with everything included such as password fields, email, modern OTP fields and more. 
 ![TailwindCSS Login & Register demo](./login-register-form/demo.png)
 
+<br><br>
+
+
+### Background line glitch
+
+If you are looking for a cyberpunk-style animation, this is something you should definetly look into:
+![Background line glitching demo](./background-line-glitch/demo.png)
+
+<br><br>
+
+
+### Terminal commands
+
+This is a Linux terminal animation, certain commands are entered in loop and their output is displayed. It could be used on Hero section of a website. 
+![Terminal commands demo](./terminal-commands/demo.png)
+
 
