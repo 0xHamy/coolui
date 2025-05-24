@@ -12,13 +12,13 @@ These are just some examples of where my animations have been tested but I usual
 
 ## A few demos
 
-| Demo 1 | Demo 2 |
+| Round rotating binary | Pulse graph |
 |--------|--------|
-| ![Demo 1 - Binary animation](./binary-round-background/demo.png "Binary animation") | ![Demo 2 - Hallucination animation](./hallucinate/demo.png "Hallucination animation") |
+| ![Demo 1 - Binary animation](./binary-round-background/demo.png "Binary animation") | ![Demo 2 - Graph animation](./graph-background/demo.png "Graph animation") |
 
-| Demo 3 | Demo 4 |
+| Double glitch lines | Moxing hexagonal network |
 |--------|--------|
-| ![Demo 3 - Background glitch lines](./background-line-glitch/demo.png "Background glitch lines") | ![Demo 4 - Terminal commands animation](./terminal-commands/demo.png "Terminal commands animation") |
+| ![Demo 3 - Background glitch lines](./background-line-glitch/demo.png "Background glitch lines") | ![Demo 4 - Hexagonal network animation](./hexagon-background/demo.png "Hexagonal network animation") |
 
 
 
