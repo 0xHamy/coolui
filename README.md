@@ -28,6 +28,7 @@ You can use this background in various ways, whether you want to create a futuri
 
 
 ### Hallucination animation
+
 If you are looking for an animation that could keep people looking more than just a few seconds, this is something you should use:
 ![Triangle animation demo](./hallucinate/demo.png)
 
@@ -35,6 +36,7 @@ If you are looking for an animation that could keep people looking more than jus
 
 
 ### Hexagonal network
+
 This animation only works on chrome.
 If you are looking for modern background that keeps changing on every load, this is something you should look into:
 ![Hexagonal network demo](./hexagon-background/demo.png)
@@ -43,13 +45,17 @@ If you are looking for modern background that keeps changing on every load, this
 
 
 ### Laser animation for images
+
 This animation was specifically created for images but it can be applied to any other elements. If you have got an image of the Matrix and want to add glitching effect on top of it, this is something you should consider using:
+
 ![Laser animation demo](./laser-animation/demo.png)
 
 <br><br>
 
 
-### 
+### Login & Register form
 
+This is a Tailwindcss multi-step register & login page with everything included such as password fields, email, modern OTP fields and more. 
+![TailwindCSS Login & Register demo](./login-register-form/demo.png)
 
 
