@@ -27,5 +27,11 @@ You can use this background in various ways, whether you want to create a futuri
 <br><br>
 
 
-### 
+### Hallucination animation
+If you are looking for an animation that could keep people looking more than just a few seconds, this is something you should use:
+![Triangle animation demo](./hallucinate/demo.png)
 
+<br><br>
+
+
+### 
