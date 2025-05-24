@@ -67,6 +67,7 @@ This animation was specifically created for images but it can be applied to any 
 ### Login & Register form
 
 This is a Tailwindcss multi-step register & login page with everything included such as password fields, email, modern OTP fields and more. 
+
 ![TailwindCSS Login & Register demo](./login-register-form/demo.png)
 
 <br><br>
