@@ -10,6 +10,17 @@ Every directory contains a different design and all of them can very easily be i
 
 These are just some examples of where my animations have been tested but I usually created modular tools so you can use them anywhere. 
 
+## A few demos
+
+| Demo 1 | Demo 2 |
+|--------|--------|
+| ![Demo 1 - Binary animation](./binary-round-background/demo.png "Binary animation") | ![Demo 2 - Hallucination animation](./hallucinate/demo.png "Hallucination animation") |
+
+| Demo 3 | Demo 4 |
+|--------|--------|
+| ![Demo 3 - Background glitch lines](./background-line-glitch/demo.png "Background glitch lines") | ![Demo 4 - Terminal commands animation](./terminal-commands/demo.png "Terminal commands animation") |
+
+
 
 ### Binary animation
 
@@ -61,7 +72,7 @@ This is a Tailwindcss multi-step register & login page with everything included 
 <br><br>
 
 
-### Background line glitch
+### Background glitch lines
 
 If you are looking for a cyberpunk-style animation, this is something you should definetly look into:
 ![Background line glitching demo](./background-line-glitch/demo.png)
