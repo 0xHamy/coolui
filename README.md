@@ -39,3 +39,17 @@ This animation only works on chrome.
 If you are looking for modern background that keeps changing on every load, this is something you should look into:
 ![Hexagonal network demo](./hexagon-background/demo.png)
 
+<br><br>
+
+
+### Laser animation for images
+This animation was specifically created for images but it can be applied to any other elements. If you have got an image of the Matrix and want to add glitching effect on top of it, this is something you should consider using:
+![Laser animation demo](./laser-animation/demo.png)
+
+<br><br>
+
+
+### 
+
+
+
