@@ -1,3 +1,0 @@
-# Create lightening effect 
-
-
